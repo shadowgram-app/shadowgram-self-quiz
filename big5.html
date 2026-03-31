@@ -293,29 +293,8 @@
   <p>IPIP 50문항 · 과학적 성격 분석 + 쉐도우그램 유형</p>
 </header>
 
-<!-- ① 코드 입력 -->
-<section id="codeSection" class="section active">
-  <div class="container">
-    <div class="card" style="text-align:center; padding:40px 24px;">
-      <div class="code-icon">🔮</div>
-      <h2 style="font-size:20px; margin-bottom:10px;">검사 시작</h2>
-      <p>발급받은 검사 코드를 입력하거나<br>베타 체험으로 시작하세요.</p>
-      <div class="code-input-wrap">
-        <input type="text" id="codeInput" placeholder="SGI-XXXXXXXX" maxlength="12"
-          onkeyup="this.value=this.value.toUpperCase()" onkeypress="if(event.key==='Enter')checkCode()">
-        <button class="btn" onclick="checkCode()">확인</button>
-      </div>
-      <div class="error-msg" id="codeError"></div>
-      <div style="margin-top:20px; padding-top:20px; border-top:1px solid var(--border);">
-        <button class="btn-outline" onclick="startBeta()">베타 체험으로 시작 →</button>
-        <p style="font-size:11px; color:var(--muted); margin-top:8px;">코드 없이 검사 결과를 미리 경험해보세요</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ② 이름 입력 -->
-<section id="nameSection" class="section">
+<!-- ① 이름 입력 (코드 없이 바로 시작) -->
+<section id="nameSection" class="section active">
   <div class="container">
     <div class="card" style="text-align:center; padding:36px 24px;">
       <div style="font-size:36px; margin-bottom:14px;">✨</div>
@@ -604,25 +583,7 @@ function showSection(id) {
   window.scrollTo(0, 0);
 }
 
-// ── 코드 확인 ──
-function checkCode() {
-  const code = document.getElementById('codeInput').value.trim().toUpperCase();
-  const err = document.getElementById('codeError');
-  if (!code) { err.textContent = '코드를 입력해주세요.'; return; }
-  const result = validateCode(code);
-  if (!result.valid) { err.textContent = result.message || '유효하지 않은 코드입니다.'; return; }
-  if (result.code.type !== 'I') { err.textContent = '개인검사 코드(SGI-)가 아닙니다.'; return; }
-  usedCode = code;
-  err.textContent = '';
-  showSection('nameSection');
-}
-
-function startBeta() {
-  const code = issueCode('I', 'Big5-Beta');
-  markCodeUsed(code.code);
-  usedCode = code.code;
-  showSection('nameSection');
-}
+// (코드 입력 불필요 — 이름 입력 화면이 첫 단계)
 
 // ── 이름 입력 → 검사 시작 ──
 function startQuiz() {
@@ -965,7 +926,8 @@ function restartQuiz() {
   answers = new Array(50).fill(null);
   currentQ = 0;
   finalScores = null;
-  showSection('codeSection');
+  document.getElementById('nameInput').value = '';
+  showSection('nameSection');
 }
 </script>
 </body>
