@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>쉐도우그램 — 코드 관리자</title>
+  <meta name="robots" content="noindex"/>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0c14; --bg2: #111520; --card: #181d2e;
+      --text: #E8E4DC; --gold: #B8860B; --goldL: #D4A017;
+      --silver: #8899AA; --border: rgba(184,134,11,0.2);
+      --red: #E05040; --green: #4CAF82; --blue: #5B9EA0;
+    }
+    html { font-size: 15px; }
+    body { background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', sans-serif; min-height: 100vh; }
+
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 24px; background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo { font-size: 16px; font-weight: 900; color: var(--gold); letter-spacing: .1em; }
+    .nav-tag { font-size: 11px; color: var(--silver); background: rgba(184,134,11,.1); padding: 3px 10px; border-radius: 10px; }
+
+    .layout { display: grid; grid-template-columns: 260px 1fr; min-height: calc(100vh - 50px); }
+
+    /* 사이드바 */
+    .sidebar {
+      background: var(--bg2); border-right: 1px solid var(--border);
+      padding: 24px 16px;
+    }
+    .sidebar-section { margin-bottom: 28px; }
+    .sidebar-label { font-size: 10px; letter-spacing: .15em; color: var(--silver); margin-bottom: 10px; padding: 0 8px; }
+    .sidebar-btn {
+      display: block; width: 100%;
+      background: none; border: none;
+      color: var(--text); font-family: 'Noto Sans KR', sans-serif;
+      font-size: 14px; text-align: left;
+      padding: 10px 12px; border-radius: 8px; cursor: pointer;
+      transition: background .15s;
+    }
+    .sidebar-btn:hover { background: rgba(255,255,255,.06); }
+    .sidebar-btn.active { background: rgba(184,134,11,.12); color: var(--gold); font-weight: 700; }
+
+    /* 메인 */
+    .main { padding: 28px 32px; }
+    .page-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+    .page-sub { font-size: 13px; color: var(--silver); margin-bottom: 28px; }
+
+    /* 통계 카드 */
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px; }
+    .stat-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 18px 20px;
+    }
+    .stat-card .label { font-size: 11px; color: var(--silver); letter-spacing: .05em; margin-bottom: 8px; }
+    .stat-card .value { font-size: 28px; font-weight: 900; }
+
+    /* 발급 폼 */
+    .issue-form {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 24px; margin-bottom: 24px;
+    }
+    .form-title { font-size: 15px; font-weight: 700; margin-bottom: 18px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; align-items: end; margin-bottom: 14px; }
+    .form-group { }
+    .form-group label { display: block; font-size: 11px; color: var(--silver); margin-bottom: 6px; letter-spacing: .05em; }
+    .form-group input, .form-group select {
+      width: 100%; background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text);
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 14px; padding: 10px 12px; outline: none;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: var(--gold); }
+
+    .btn {
+      background: linear-gradient(135deg, var(--gold), var(--goldL));
+      border: none; border-radius: 8px;
+      color: #000; font-family: 'Noto Sans KR', sans-serif;
+      font-size: 14px; font-weight: 700;
+      padding: 10px 20px; cursor: pointer; white-space: nowrap;
+    }
+    .btn:hover { opacity: .9; }
+    .btn-sm {
+      background: rgba(184,134,11,.15); border: 1px solid var(--border);
+      border-radius: 6px; color: var(--gold);
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 12px; font-weight: 700;
+      padding: 5px 10px; cursor: pointer;
+    }
+    .btn-sm:hover { background: rgba(184,134,11,.25); }
+    .btn-danger {
+      background: rgba(224,80,64,.15); border: 1px solid rgba(224,80,64,.3);
+      border-radius: 6px; color: var(--red);
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 12px; padding: 5px 10px; cursor: pointer;
+    }
+
+    /* 일괄 발급 */
+    .bulk-row { display: grid; grid-template-columns: auto auto auto auto 1fr auto; gap: 10px; align-items: end; margin-bottom: 14px; }
+
+    /* 코드 목록 테이블 */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th {
+      text-align: left; padding: 10px 12px;
+      font-size: 11px; color: var(--silver); letter-spacing: .06em;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg2);
+    }
+    td {
+      padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,.05);
+    }
+    tr:hover td { background: rgba(255,255,255,.02); }
+
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 10px;
+      font-size: 11px; font-weight: 700;
+    }
+    .badge-i { background: rgba(91,158,160,.2); color: var(--blue); }
+    .badge-c { background: rgba(212,136,106,.2); color: var(--red); }
+    .badge-g { background: rgba(107,142,107,.2); color: #6B8E6B; }
+    .badge-used { background: rgba(76,175,130,.15); color: var(--green); }
+    .badge-unused { background: rgba(184,134,11,.12); color: var(--gold); }
+    .badge-expired { background: rgba(224,80,64,.12); color: var(--red); }
+
+    .code-text {
+      font-family: monospace; font-size: 13px;
+      letter-spacing: .08em; color: var(--gold);
+    }
+
+    /* 탭 패널 */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* 발급된 코드 복사 알림 */
+    #issued-result {
+      background: rgba(76,175,130,.1); border: 1px solid rgba(76,175,130,.25);
+      border-radius: 10px; padding: 14px 16px; margin-bottom: 16px;
+      display: none;
+    }
+    .issued-code-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,.05);
+    }
+    .issued-code-item:last-child { border-bottom: none; }
+
+    @media (max-width: 768px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .stats-row { grid-template-columns: 1fr 1fr; }
+      .form-row, .bulk-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-logo">SHADOWGRAM</span>
+  <span class="nav-tag">관리자 · 코드 발급 시스템</span>
+</nav>
+
+<div class="layout">
+  <!-- 사이드바 -->
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">MENU</div>
+      <button class="sidebar-btn active" onclick="switchTab('dashboard')">📊 대시보드</button>
+      <button class="sidebar-btn" onclick="switchTab('issue')">➕ 코드 발급</button>
+      <button class="sidebar-btn" onclick="switchTab('codes')">📋 코드 목록</button>
+      <button class="sidebar-btn" onclick="switchTab('bulk')">⚡ 일괄 발급</button>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">LINKS</div>
+      <a href="index.html" target="_blank" class="sidebar-btn" style="display:block;text-decoration:none;color:var(--text)">🧠 개인 검사 →</a>
+      <a href="couple.html" target="_blank" class="sidebar-btn" style="display:block;text-decoration:none;color:var(--text)">💑 커플 검사 →</a>
+    </div>
+  </div>
+
+  <!-- 메인 -->
+  <div class="main">
+
+    <!-- 대시보드 -->
+    <div id="tab-dashboard" class="tab-panel active">
+      <div class="page-title">대시보드</div>
+      <div class="page-sub">코드 발급 및 사용 현황</div>
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="label">전체 발급 코드</div>
+          <div class="value" id="stat-total" style="color:var(--gold)">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">사용 완료</div>
+          <div class="value" id="stat-used" style="color:var(--green)">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">미사용 (유효)</div>
+          <div class="value" id="stat-unused" style="color:var(--blue)">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">만료</div>
+          <div class="value" id="stat-expired" style="color:var(--red)">0</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="issue-form">
+          <div class="form-title">유형별 발급 현황</div>
+          <div id="type-breakdown" style="font-size:13px;line-height:2;color:var(--silver)">데이터 없음</div>
+        </div>
+        <div class="issue-form">
+          <div class="form-title">최근 사용된 코드</div>
+          <div id="recent-used" style="font-size:13px;line-height:2;color:var(--silver)">데이터 없음</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 코드 발급 -->
+    <div id="tab-issue" class="tab-panel">
+      <div class="page-title">코드 발급</div>
+      <div class="page-sub">개인(I) / 커플(C) 코드를 발급합니다</div>
+
+      <div class="issue-form">
+        <div class="form-title">단건 발급</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>코드 유형</label>
+            <select id="issue-type">
+              <option value="I">개인 검사 (SGI-)</option>
+              <option value="C">커플 검사 (SGC-)</option>
+              <option value="G">그룹/단체 (SGG-)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>메모 (구매자 이름, 채널 등)</label>
+            <input type="text" id="issue-label" placeholder="예: 홍길동, 카카오채널"/>
+          </div>
+          <div class="form-group">
+            <label>유효기간 (일, 비워두면 무제한)</label>
+            <input type="number" id="issue-expiry" placeholder="30" min="1" max="365"/>
+          </div>
+          <button class="btn" onclick="issueSingle()">발급</button>
+        </div>
+
+        <div id="issued-result"></div>
+      </div>
+    </div>
+
+    <!-- 코드 목록 -->
+    <div id="tab-codes" class="tab-panel">
+      <div class="page-title">전체 코드 목록</div>
+      <div class="page-sub" style="display:flex;align-items:center;gap:12px;">
+        <span>발급된 모든 코드</span>
+        <input type="text" id="search-code" placeholder="코드 또는 메모 검색..." style="background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:13px;padding:6px 12px;outline:none;width:220px;"/>
+        <button class="btn" onclick="exportCSV()" style="padding:7px 14px;font-size:12px;">CSV 내보내기</button>
+        <button class="btn-danger" onclick="clearAll()" style="padding:7px 14px;">전체 삭제</button>
+      </div>
+      <br/>
+      <div class="table-wrap">
+        <table id="codes-table">
+          <thead>
+            <tr>
+              <th>코드</th>
+              <th>유형</th>
+              <th>상태</th>
+              <th>메모</th>
+              <th>발급일</th>
+              <th>사용일</th>
+              <th>사용자</th>
+              <th>만료</th>
+              <th>액션</th>
+            </tr>
+          </thead>
+          <tbody id="codes-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 일괄 발급 -->
+    <div id="tab-bulk" class="tab-panel">
+      <div class="page-title">일괄 발급</div>
+      <div class="page-sub">기업/단체 판매용 코드를 한 번에 발급합니다</div>
+
+      <div class="issue-form">
+        <div class="form-title">일괄 발급 설정</div>
+        <div class="bulk-row">
+          <div class="form-group">
+            <label>코드 유형</label>
+            <select id="bulk-type">
+              <option value="I">개인 (SGI-)</option>
+              <option value="C">커플 (SGC-)</option>
+              <option value="G">그룹 (SGG-)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>발급 수량</label>
+            <input type="number" id="bulk-count" value="10" min="1" max="500"/>
+          </div>
+          <div class="form-group">
+            <label>유효기간 (일)</label>
+            <input type="number" id="bulk-expiry" placeholder="무제한" min="1" max="365"/>
+          </div>
+          <div class="form-group">
+            <label>메모 (단체명)</label>
+            <input type="text" id="bulk-label" placeholder="예: ○○기업 팀빌딩"/>
+          </div>
+          <div></div>
+          <button class="btn" onclick="issueBulk()">일괄 발급</button>
+        </div>
+
+        <div id="bulk-result" style="display:none;">
+          <div style="font-size:13px;color:var(--green);margin-bottom:12px;" id="bulk-result-msg"></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>코드</th><th>복사</th></tr></thead>
+              <tbody id="bulk-table"></tbody>
+            </table>
+          </div>
+          <button class="btn" onclick="copyAllBulk()" style="margin-top:14px;">전체 복사 (줄바꿈)</button>
+          <button class="btn" onclick="exportBulkCSV()" style="margin-top:8px;margin-left:8px;background:var(--card);border:1px solid var(--border);color:var(--text);">CSV 다운로드</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="sg-data.js"></script>
+<script>
+let lastBulkCodes = [];
+
+// ── 탭 전환 ──
+function switchTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (name === 'dashboard') refreshDashboard();
+  if (name === 'codes') renderCodesTable();
+}
+
+// ── 통계 ──
+function getStats() {
+  const stored = JSON.parse(localStorage.getItem('sg_issued_codes') || '{}');
+  const codes = Object.entries(stored);
+  const now = new Date();
+  let total = codes.length, used = 0, unused = 0, expired = 0;
+  const byType = { I: 0, C: 0, G: 0 };
+
+  codes.forEach(([k, v]) => {
+    if (v.used) used++;
+    else if (v.expires && new Date(v.expires) < now) expired++;
+    else unused++;
+    if (v.type) byType[v.type] = (byType[v.type] || 0) + 1;
+  });
+  return { total, used, unused, expired, byType, codes: stored };
+}
+
+function refreshDashboard() {
+  const s = getStats();
+  document.getElementById('stat-total').textContent = s.total;
+  document.getElementById('stat-used').textContent = s.used;
+  document.getElementById('stat-unused').textContent = s.unused;
+  document.getElementById('stat-expired').textContent = s.expired;
+
+  // 유형별
+  document.getElementById('type-breakdown').innerHTML = `
+    개인 (SGI-): <strong style="color:var(--blue)">${s.byType.I || 0}개</strong><br/>
+    커플 (SGC-): <strong style="color:var(--red)">${s.byType.C || 0}개</strong><br/>
+    그룹 (SGG-): <strong style="color:#6B8E6B">${s.byType.G || 0}개</strong>
+  `;
+
+  // 최근 사용
+  const usedCodes = Object.entries(s.codes)
+    .filter(([,v]) => v.used && v.usedAt)
+    .sort((a,b) => new Date(b[1].usedAt) - new Date(a[1].usedAt))
+    .slice(0, 5);
+
+  if (usedCodes.length) {
+    document.getElementById('recent-used').innerHTML = usedCodes.map(([code, v]) =>
+      `<div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.05);padding:4px 0">
+        <span class="code-text" style="font-size:12px">${code}</span>
+        <span style="color:var(--silver);font-size:11px">${v.usedBy?.name || '-'} · ${new Date(v.usedAt).toLocaleDateString('ko-KR')}</span>
+       </div>`
+    ).join('');
+  } else {
+    document.getElementById('recent-used').textContent = '아직 사용된 코드 없음';
+  }
+}
+
+// ── 단건 발급 ──
+function issueSingle() {
+  const type = document.getElementById('issue-type').value;
+  const label = document.getElementById('issue-label').value.trim();
+  const expiryDays = parseInt(document.getElementById('issue-expiry').value) || null;
+
+  const code = issueCode(type, label, expiryDays);
+
+  const result = document.getElementById('issued-result');
+  result.style.display = 'block';
+  result.innerHTML = `
+    <div style="font-size:13px;color:var(--green);margin-bottom:10px;">✓ 코드 발급 완료</div>
+    <div class="issued-code-item">
+      <span class="code-text">${code}</span>
+      <button class="btn-sm" onclick="copyCode('${code}', this)">복사</button>
+    </div>
+    <div style="font-size:12px;color:var(--silver);margin-top:8px;">
+      유형: ${type === 'I' ? '개인' : type === 'C' ? '커플' : '그룹'} ·
+      ${expiryDays ? expiryDays + '일 후 만료' : '무제한'} ·
+      ${label || '메모 없음'}
+    </div>`;
+
+  document.getElementById('issue-label').value = '';
+  refreshDashboard();
+}
+
+// ── 일괄 발급 ──
+function issueBulk() {
+  const type = document.getElementById('bulk-type').value;
+  const count = parseInt(document.getElementById('bulk-count').value) || 10;
+  const expiryDays = parseInt(document.getElementById('bulk-expiry').value) || null;
+  const label = document.getElementById('bulk-label').value.trim();
+
+  lastBulkCodes = [];
+  for (let i = 0; i < count; i++) {
+    lastBulkCodes.push(issueCode(type, label, expiryDays));
+  }
+
+  document.getElementById('bulk-result').style.display = 'block';
+  document.getElementById('bulk-result-msg').textContent = `✓ ${count}개 코드 발급 완료`;
+  document.getElementById('bulk-table').innerHTML = lastBulkCodes.map((code, i) => `
+    <tr>
+      <td style="color:var(--silver)">${i+1}</td>
+      <td class="code-text">${code}</td>
+      <td><button class="btn-sm" onclick="copyCode('${code}', this)">복사</button></td>
+    </tr>`).join('');
+
+  refreshDashboard();
+}
+
+function copyAllBulk() {
+  navigator.clipboard.writeText(lastBulkCodes.join('\n')).then(() => {
+    alert(`${lastBulkCodes.length}개 코드가 복사됐습니다.`);
+  });
+}
+
+function exportBulkCSV() {
+  const csv = 'Code,Type,Label\n' + lastBulkCodes.map(c => `${c},${document.getElementById('bulk-type').value},${document.getElementById('bulk-label').value}`).join('\n');
+  downloadCSVData(csv, `sg_codes_bulk_${Date.now()}.csv`);
+}
+
+// ── 코드 목록 ──
+function renderCodesTable(filter='') {
+  const stored = JSON.parse(localStorage.getItem('sg_issued_codes') || '{}');
+  const now = new Date();
+  const tbody = document.getElementById('codes-tbody');
+
+  const entries = Object.entries(stored)
+    .filter(([code, v]) => !filter || code.includes(filter.toUpperCase()) || (v.label || '').includes(filter))
+    .sort((a,b) => new Date(b[1].issued) - new Date(a[1].issued));
+
+  if (!entries.length) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--silver);padding:32px">발급된 코드 없음</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = entries.map(([code, v]) => {
+    const expired = v.expires && new Date(v.expires) < now;
+    let status = v.used ? '<span class="badge badge-used">사용됨</span>'
+      : expired ? '<span class="badge badge-expired">만료</span>'
+      : '<span class="badge badge-unused">미사용</span>';
+    const typeBadge = `<span class="badge badge-${v.type?.toLowerCase() || 'i'}">${v.type || 'I'}</span>`;
+    const issued = new Date(v.issued).toLocaleDateString('ko-KR');
+    const usedAt = v.usedAt ? new Date(v.usedAt).toLocaleDateString('ko-KR') : '-';
+    const expires = v.expires ? new Date(v.expires).toLocaleDateString('ko-KR') : '무제한';
+
+    return `<tr>
+      <td class="code-text">${code}</td>
+      <td>${typeBadge}</td>
+      <td>${status}</td>
+      <td style="color:var(--silver)">${v.label || '-'}</td>
+      <td style="color:var(--silver)">${issued}</td>
+      <td style="color:var(--silver)">${usedAt}</td>
+      <td style="color:var(--silver)">${v.usedBy?.name || '-'}</td>
+      <td style="color:${expired ? 'var(--red)' : 'var(--silver)'}">${expires}</td>
+      <td>
+        <button class="btn-sm" onclick="copyCode('${code}', this)" style="margin-right:4px">복사</button>
+        <button class="btn-danger" onclick="deleteCode('${code}')">삭제</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+document.getElementById('search-code').addEventListener('input', function() {
+  renderCodesTable(this.value.trim());
+});
+
+function deleteCode(code) {
+  if (!confirm(`코드 ${code}를 삭제하시겠습니까?`)) return;
+  const stored = JSON.parse(localStorage.getItem('sg_issued_codes') || '{}');
+  delete stored[code];
+  localStorage.setItem('sg_issued_codes', JSON.stringify(stored));
+  renderCodesTable();
+  refreshDashboard();
+}
+
+function clearAll() {
+  if (!confirm('발급된 코드를 모두 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return;
+  localStorage.removeItem('sg_issued_codes');
+  renderCodesTable();
+  refreshDashboard();
+}
+
+// ── CSV 내보내기 ──
+function exportCSV() {
+  const stored = JSON.parse(localStorage.getItem('sg_issued_codes') || '{}');
+  const rows = [['Code','Type','Status','Label','Issued','UsedAt','UsedBy','Expires']];
+  const now = new Date();
+  Object.entries(stored).forEach(([code, v]) => {
+    const expired = v.expires && new Date(v.expires) < now;
+    rows.push([
+      code,
+      v.type || '',
+      v.used ? 'used' : expired ? 'expired' : 'unused',
+      v.label || '',
+      v.issued ? new Date(v.issued).toLocaleDateString('ko-KR') : '',
+      v.usedAt ? new Date(v.usedAt).toLocaleDateString('ko-KR') : '',
+      v.usedBy?.name || '',
+      v.expires ? new Date(v.expires).toLocaleDateString('ko-KR') : '무제한',
+    ]);
+  });
+  const csv = rows.map(r => r.join(',')).join('\n');
+  downloadCSVData(csv, `sg_codes_${new Date().toISOString().slice(0,10)}.csv`);
+}
+
+function downloadCSVData(csv, filename) {
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── 유틸 ──
+function copyCode(code, btn) {
+  navigator.clipboard.writeText(code).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✓ 복사됨';
+    setTimeout(() => btn.textContent = orig, 1500);
+  });
+}
+
+// ── 초기화 ──
+refreshDashboard();
+</script>
+</body>
+</html>

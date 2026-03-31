@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>쉐도우그램 — 전체 보고서</title>
+  <meta name="robots" content="noindex"/>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:    #0F121E;
+      --bg2:   #161A28;
+      --card:  #1E2233;
+      --text:  #E8E4DC;
+      --gold:  #B8860B;
+      --goldL: #D4A017;
+      --silver:#8899AA;
+      --border:rgba(184,134,11,0.18);
+      --red:   #E05040;
+      --green: #4CAF82;
+      --rose:  #D4886A;
+    }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', sans-serif; min-height: 100vh; }
+
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px; border-bottom: 1px solid var(--border);
+      position: sticky; top: 0;
+      background: rgba(15,18,30,0.97); backdrop-filter: blur(8px); z-index: 100;
+    }
+    .nav-logo { font-size: 16px; font-weight: 900; letter-spacing: 0.1em; color: var(--gold); text-decoration: none; }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .btn-pdf {
+      background: linear-gradient(135deg, var(--gold), var(--goldL));
+      border: none; border-radius: 8px;
+      color: #000; font-family: 'Noto Sans KR', sans-serif;
+      font-size: 13px; font-weight: 700;
+      padding: 8px 16px; cursor: pointer;
+      transition: opacity .2s;
+    }
+    .btn-pdf:hover { opacity: .9; }
+    .nav-back { font-size: 12px; color: var(--silver); text-decoration: none; }
+    .nav-back:hover { color: var(--gold); }
+
+    /* 접근 불가 */
+    #access-denied {
+      max-width: 480px; margin: 80px auto; padding: 0 20px; text-align: center;
+    }
+    .denied-icon { font-size: 48px; margin-bottom: 16px; }
+    .denied-title { font-size: 22px; font-weight: 700; margin-bottom: 10px; }
+    .denied-sub { font-size: 14px; color: var(--silver); line-height: 1.7; margin-bottom: 28px; }
+    .btn-go {
+      display: inline-block; padding: 14px 28px;
+      background: linear-gradient(135deg, var(--gold), var(--goldL));
+      border-radius: 12px; color: #000; font-weight: 700; font-size: 14px; text-decoration: none;
+    }
+
+    /* 로딩 */
+    #loading {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 60vh; gap: 16px;
+    }
+    .spinner {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 3px solid var(--border);
+      border-top-color: var(--gold);
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* 보고서 본문 */
+    #report-content {
+      max-width: 740px; margin: 0 auto; padding: 40px 20px 80px;
+    }
+
+    /* 커버 */
+    .report-cover {
+      text-align: center; padding: 40px 0 48px;
+      border-bottom: 1px solid var(--border); margin-bottom: 40px;
+    }
+    .cover-kicker { font-size: 11px; letter-spacing: 0.2em; color: var(--gold); margin-bottom: 16px; }
+    .cover-type {
+      font-size: clamp(60px, 14vw, 100px); font-weight: 900;
+      line-height: 1; margin-bottom: 8px; letter-spacing: 0.05em;
+    }
+    .cover-func {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(18px, 4vw, 26px); font-style: italic;
+      color: var(--silver); margin-bottom: 6px;
+    }
+    .cover-tagline { font-size: 14px; color: var(--silver); letter-spacing: 0.05em; }
+    .cover-name { font-size: 13px; color: var(--gold); margin-top: 20px; }
+    .cover-date { font-size: 12px; color: var(--silver); margin-top: 4px; }
+
+    /* 섹션 */
+    .report-section { margin-bottom: 40px; }
+    .section-num { font-size: 11px; letter-spacing: 0.18em; color: var(--silver); margin-bottom: 8px; }
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(22px, 5vw, 32px); font-weight: 600;
+      line-height: 1.3; margin-bottom: 20px;
+    }
+    .section-title em { font-style: italic; }
+
+    .content-block {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px 26px; margin-bottom: 16px;
+    }
+    .block-header { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; margin-bottom: 12px; }
+    .block-body { font-size: 16px; line-height: 1.85; }
+    .block-body p + p { margin-top: 14px; }
+
+    /* 패턴 카드 */
+    .pattern-card {
+      border-left: 3px solid var(--gold);
+      background: var(--card); border-radius: 0 14px 14px 0;
+      padding: 20px 22px; margin-bottom: 14px;
+    }
+    .pattern-num { font-size: 11px; color: var(--gold); letter-spacing: 0.12em; margin-bottom: 6px; }
+    .pattern-title { font-size: 17px; font-weight: 700; margin-bottom: 10px; }
+    .pattern-body { font-size: 15px; line-height: 1.75; color: var(--silver); }
+
+    /* 워크북 */
+    .workbook-card {
+      background: linear-gradient(135deg, rgba(184,134,11,.1), rgba(184,134,11,.04));
+      border: 1px solid rgba(184,134,11,.25);
+      border-radius: 16px; padding: 24px 26px; margin-bottom: 16px;
+    }
+    .workbook-q { font-size: 16px; font-weight: 700; color: var(--gold); margin-bottom: 10px; }
+    .workbook-hint { font-size: 14px; color: var(--silver); line-height: 1.65; }
+
+    /* 실천 가이드 */
+    .action-list { list-style: none; }
+    .action-list li {
+      display: flex; gap: 14px; align-items: flex-start;
+      padding: 14px 0; border-bottom: 1px solid var(--border);
+      font-size: 15px; line-height: 1.65;
+    }
+    .action-list li:last-child { border-bottom: none; }
+    .action-num {
+      flex-shrink: 0;
+      width: 26px; height: 26px; border-radius: 50%;
+      background: rgba(184,134,11,.15); border: 1px solid rgba(184,134,11,.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: var(--gold);
+    }
+
+    /* 커플 섹션 */
+    .couple-banner {
+      background: linear-gradient(135deg, rgba(212,136,106,.12), rgba(184,134,11,.06));
+      border: 1px solid rgba(212,136,106,.25);
+      border-radius: 16px; padding: 24px 26px; margin-bottom: 16px;
+      text-align: center;
+    }
+
+    /* 구분선 */
+    .section-divider { height: 1px; background: var(--border); margin: 36px 0; }
+
+    /* 푸터 워터마크 */
+    .report-footer {
+      text-align: center; padding: 32px 0 16px;
+      border-top: 1px solid var(--border);
+      font-size: 12px; color: var(--silver);
+      letter-spacing: 0.05em; line-height: 1.8;
+    }
+
+    @media (max-width: 480px) {
+      .content-block { padding: 18px 18px; }
+      .pattern-card { padding: 16px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/">SHADOWGRAM</a>
+  <div class="nav-right">
+    <button class="btn-pdf" onclick="downloadPDF()" id="btn-pdf-nav">PDF 저장</button>
+    <a class="nav-back" href="index.html">← 처음으로</a>
+  </div>
+</nav>
+
+<!-- 로딩 -->
+<div id="loading">
+  <div class="spinner"></div>
+  <p style="font-size:14px;color:var(--silver);">보고서 불러오는 중...</p>
+</div>
+
+<!-- 접근 불가 -->
+<div id="access-denied" style="display:none;">
+  <div class="denied-icon">🔒</div>
+  <div class="denied-title">보고서에 접근할 수 없습니다</div>
+  <div class="denied-sub">유효하지 않거나 만료된 링크입니다.<br/>검사 후 결제를 완료하면 보고서가 열립니다.</div>
+  <a class="btn-go" href="index.html">검사 시작하기 →</a>
+</div>
+
+<!-- 보고서 본문 -->
+<div id="report-content" style="display:none;"></div>
+
+<script src="sg-data.js"></script>
+<script>
+// jsPDF & html2canvas CDN
+const PDF_LIBS_LOADED = new Promise(resolve => {
+  const s1 = document.createElement('script');
+  s1.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+  s1.onload = () => {
+    const s2 = document.createElement('script');
+    s2.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+    s2.onload = resolve;
+    document.head.appendChild(s2);
+  };
+  document.head.appendChild(s1);
+});
+
+// ── URL 파라미터 파싱 ──
+const params = new URLSearchParams(window.location.search);
+const pType  = (params.get('type') || '').toUpperCase();
+const pName  = decodeURIComponent(params.get('name') || '');
+const pPaid  = params.get('paid') === '1';
+const pMode  = params.get('mode') || 'self';       // self | couple
+const pTypeB = (params.get('typeB') || '').toUpperCase();
+const pNameB = decodeURIComponent(params.get('nameB') || '');
+
+function init() {
+  // 베타: URL에 paid=1 이면 접근 허용
+  if (!pPaid || !TYPES[pType]) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('access-denied').style.display = 'block';
+    return;
+  }
+
+  document.getElementById('loading').style.display = 'none';
+  const container = document.getElementById('report-content');
+  container.style.display = 'block';
+
+  if (pMode === 'couple' && pTypeB && TYPES[pTypeB]) {
+    renderCoupleReport(container);
+  } else {
+    renderSelfReport(container);
+  }
+}
+
+// ── 개인 보고서 ──
+function renderSelfReport(container) {
+  const data = TYPES[pType];
+  const today = new Date().toLocaleDateString('ko-KR', { year:'numeric', month:'long', day:'numeric' });
+
+  container.innerHTML = `
+    <!-- COVER -->
+    <div class="report-cover">
+      <p class="cover-kicker">SHADOWGRAM SELF · 전체 보고서</p>
+      <div class="cover-type" style="color:${data.color}">${pType}</div>
+      <div class="cover-func">${data.func}</div>
+      <div class="cover-tagline">${data.tagline}</div>
+      ${pName ? `<div class="cover-name">${pName}의 보고서</div>` : ''}
+      <div class="cover-date">${today}</div>
+    </div>
+
+    <!-- 섹션 1: 나의 빛 -->
+    <div class="report-section">
+      <p class="section-num">SECTION 01</p>
+      <h2 class="section-title">당신의 <em>빛</em> — 지배 기능</h2>
+      <div class="content-block">
+        <div class="block-header" style="color:${data.color}">✦ ${data.func} · 당신의 핵심 강점</div>
+        <div class="block-body"><p>${data.light}</p></div>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- 섹션 2: 그림자 -->
+    <div class="report-section">
+      <p class="section-num">SECTION 02</p>
+      <h2 class="section-title">당신의 <em>그림자</em> — 통합의 열쇠</h2>
+      <div class="content-block">
+        <div class="block-header" style="color:var(--silver)">⚡ 그림자 기능이란?</div>
+        <div class="block-body">
+          <p>${data.shadow}</p>
+          <p style="margin-top:14px;color:var(--silver);font-size:15px;">그림자는 '나쁜 것'이 아닙니다. 아직 통합되지 않은 잠재력입니다. 그림자를 인식하고 통합하는 사람은 자신의 빛을 두 배로 발휘합니다.</p>
+        </div>
+      </div>
+      <div class="content-block" style="border-color:rgba(224,80,64,.2);">
+        <div class="block-header" style="color:var(--red)">◈ 통합하지 않을 때의 대가</div>
+        <div class="block-body" style="color:var(--silver)"><p>${data.pain}</p></div>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- 섹션 3: 4가지 패턴 -->
+    <div class="report-section">
+      <p class="section-num">SECTION 03</p>
+      <h2 class="section-title">4가지 <em>무의식 패턴</em></h2>
+      <p style="font-size:15px;color:var(--silver);line-height:1.7;margin-bottom:24px;">
+        아래 4가지 패턴은 ${pType} 유형이 반복적으로 경험하는 심리적 구조입니다.
+        각 패턴을 인식하는 순간, 자동적 반응에서 의식적 선택으로 이동할 수 있습니다.
+      </p>
+      ${buildPatterns(data, pType)}
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- 섹션 4: 통합 워크북 -->
+    <div class="report-section">
+      <p class="section-num">SECTION 04</p>
+      <h2 class="section-title">그림자 통합 <em>워크북</em></h2>
+      <p style="font-size:15px;color:var(--silver);line-height:1.7;margin-bottom:24px;">
+        아래 질문들은 단순한 반성이 아닙니다. 무의식을 의식화하는 도구입니다.
+        일주일에 하나씩, 솔직하게 답해보세요.
+      </p>
+      ${buildWorkbook(pType)}
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- 섹션 5: 실천 가이드 -->
+    <div class="report-section">
+      <p class="section-num">SECTION 05</p>
+      <h2 class="section-title">지금 당장 시작하는 <em>통합 실천</em></h2>
+      ${buildActionGuide(pType)}
+    </div>
+
+    <!-- 푸터 -->
+    <div class="report-footer">
+      SHADOWGRAM SELF · ${pType} 유형 · 전체 보고서<br/>
+      ${pName ? pName + ' · ' : ''}${today}<br/>
+      © Shadowgram — 무단 복제 및 공유 금지
+    </div>
+  `;
+}
+
+// ── 커플 보고서 ──
+function renderCoupleReport(container) {
+  const dataA = TYPES[pType];
+  const dataB = TYPES[pTypeB];
+  const compat = COUPLE_COMPAT._get(pType, pTypeB);
+  const today = new Date().toLocaleDateString('ko-KR', { year:'numeric', month:'long', day:'numeric' });
+
+  container.innerHTML = `
+    <div class="report-cover">
+      <p class="cover-kicker">SHADOWGRAM COUPLE · 소통유형 보고서</p>
+      <div style="display:flex;justify-content:center;align-items:center;gap:16px;margin:20px 0;">
+        <div>
+          <div class="cover-type" style="color:${dataA.color};font-size:clamp(40px,8vw,64px)">${pType}</div>
+          <div style="font-size:13px;color:var(--silver)">${pName || '파트너 A'}</div>
+        </div>
+        <div style="font-size:32px;color:var(--rose)">♡</div>
+        <div>
+          <div class="cover-type" style="color:${dataB.color};font-size:clamp(40px,8vw,64px)">${pTypeB}</div>
+          <div style="font-size:13px;color:var(--silver)">${pNameB || '파트너 B'}</div>
+        </div>
+      </div>
+      <div class="cover-date">${today}</div>
+    </div>
+
+    <!-- 궁합 점수 -->
+    <div class="report-section">
+      <p class="section-num">SECTION 01</p>
+      <h2 class="section-title">두 사람의 <em>궁합 점수</em></h2>
+      <div class="couple-banner">
+        <div style="font-size:72px;font-weight:900;color:var(--rose);line-height:1">${compat.score}점</div>
+        <div style="font-size:20px;font-weight:700;margin:8px 0">${compat.title}</div>
+        <div style="font-size:15px;color:var(--silver);line-height:1.7">${compat.desc}</div>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- 강점 -->
+    <div class="report-section">
+      <p class="section-num">SECTION 02</p>
+      <h2 class="section-title">두 사람의 <em>강점</em></h2>
+      <div class="content-block">
+        <div class="block-header" style="color:var(--green)">✦ 함께일 때 빛나는 것</div>
+        <div class="block-body"><p>${compat.strength}</p></div>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- 충돌 패턴 -->
+    <div class="report-section">
+      <p class="section-num">SECTION 03</p>
+      <h2 class="section-title">반복되는 <em>충돌 패턴</em></h2>
+      <div class="content-block" style="border-color:rgba(224,80,64,.2)">
+        <div class="block-header" style="color:var(--red)">◈ 갈등의 근원</div>
+        <div class="block-body" style="color:var(--silver)"><p>${compat.challenge}</p></div>
+      </div>
+      ${buildCoupleConflictDetail(pType, pTypeB)}
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- 개인별 이해 -->
+    <div class="report-section">
+      <p class="section-num">SECTION 04</p>
+      <h2 class="section-title">서로를 <em>더 깊이 이해하기</em></h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="content-block">
+          <div class="block-header" style="color:${dataA.color}">${pName || pType} (${pType})</div>
+          <div class="block-body" style="font-size:14px">
+            <p>${dataA.light}</p>
+            <p style="margin-top:12px;color:var(--silver);font-size:13px">${dataA.shadow}</p>
+          </div>
+        </div>
+        <div class="content-block">
+          <div class="block-header" style="color:${dataB.color}">${pNameB || pTypeB} (${pTypeB})</div>
+          <div class="block-body" style="font-size:14px">
+            <p>${dataB.light}</p>
+            <p style="margin-top:12px;color:var(--silver);font-size:13px">${dataB.shadow}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- 소통 가이드 -->
+    <div class="report-section">
+      <p class="section-num">SECTION 05</p>
+      <h2 class="section-title">두 사람을 위한 <em>소통 가이드</em></h2>
+      ${buildCoupleGuide(pType, pTypeB)}
+    </div>
+
+    <div class="report-footer">
+      SHADOWGRAM COUPLE · ${pType} × ${pTypeB} · 소통유형 보고서<br/>
+      ${pName && pNameB ? pName + ' & ' + pNameB + ' · ' : ''}${today}<br/>
+      © Shadowgram — 무단 복제 및 공유 금지
+    </div>
+  `;
+}
+
+// ── 패턴 생성기 ──
+function buildPatterns(data, type) {
+  const lines = data.preview.split('\n\n');
+  return lines.map((block, i) => {
+    const parts = block.split('\n');
+    const titleLine = parts[0] || '';
+    const descLine = parts[1] || '';
+    const match = titleLine.match(/패턴 (\d+) · (.+)/);
+    const num = match ? match[1] : (i+1).toString();
+    const title = match ? match[2] : titleLine;
+    return `
+      <div class="pattern-card">
+        <div class="pattern-num">패턴 ${num}</div>
+        <div class="pattern-title">${title}</div>
+        <div class="pattern-body">${descLine}${buildPatternDetail(type, i)}</div>
+      </div>`;
+  }).join('');
+}
+
+function buildPatternDetail(type, idx) {
+  const details = {
+    LOGIC: [
+      '\n\n당신이 조용해질 때, 상대방은 당신이 화가 났다고 느낍니다. 당신이 분석할 때, 상대방은 공감받지 못한다고 느낍니다. 이것은 의도의 문제가 아닙니다. 기능의 구조입니다.',
+      '\n\n정밀한 사람들은 종종 "그건 비논리적이야"라는 말을 자주 씁니다. 이 말이 상대에게 얼마나 상처가 되는지 인식하지 못하면, 관계는 서서히 식습니다.',
+      '\n\n혼자가 편한 것은 사실입니다. 하지만 친밀함이 없는 삶에서 오는 공허함도 사실입니다. 이 두 사실이 공존할 때 통합이 시작됩니다.',
+      '\n\n Fe 통합은 당신의 논리를 버리는 게 아닙니다. 논리적으로 정확하면서도, 상대방이 들을 수 있는 방식으로 전달하는 것입니다.',
+    ],
+    HARMONY: [
+      '\n\n"No"라고 말하는 것이 이기적이라고 느껴진다면, 그것은 Ti 그림자의 신호입니다. 경계는 이기심이 아닙니다. 지속 가능한 관계의 기초입니다.',
+      '\n\n다른 사람이 고통받을 때 자신도 함께 고통받는 것은 공감이 아닙니다. 그것은 융합입니다. 진정한 공감은 상대의 고통을 목격하면서도 자신의 중심을 잃지 않는 것입니다.',
+      '\n\n당신이 소진되는 패턴을 살펴보세요. 거의 항상 자신의 필요를 마지막 순위에 놓는 것에서 시작됩니다.',
+      '\n\n Ti 통합은 자기 중심을 갖는 것입니다. 모두를 돌보는 이유가 두려움이 아닌 진정한 사랑에서 나올 때 당신은 비로소 자유로워집니다.',
+    ],
+    LEADER: [
+      '\n\n결과에 집중하는 동안 당신 자신의 감정 신호는 무시됩니다. 몸은 기억합니다. 오랫동안 무시된 감정은 언젠가 더 큰 소리로 이야기합니다.',
+      '\n\n취약함을 보이지 않는 리더는 강해 보이지만 고립됩니다. 팀원들은 당신을 존경하면서도 가까이 다가가지 않습니다.',
+      '\n\n성취 후의 공허함은 목표가 틀렸다는 신호가 아닙니다. 그것은 더 깊은 곳에서 당신이 원하는 것을 아직 찾지 못했다는 신호입니다.',
+      '\n\n Fi 통합은 "내가 진정으로 원하는 것은 무엇인가?"라는 질문에서 시작합니다. 이 질문이 불편하다면, 그것이 정확히 그림자의 위치입니다.',
+    ],
+    SOUL: [
+      '\n\n당신의 깊이는 실제입니다. 하지만 그 깊이가 세상과 연결되는 방식을 찾지 못하면, 보이지 않는 채로 남습니다.',
+      '\n\n할 일 목록이 쌓여도 시작하기 어려운 것은 게으름이 아닙니다. 의미를 찾지 못한 일을 강요받을 때 나타나는 Te 그림자의 반응입니다.',
+      '\n\n조용한 분노는 종종 인정받지 못하는 깊이에서 옵니다. 이것을 표현하는 건강한 방법을 찾는 것이 통합의 시작입니다.',
+      '\n\n Te 통합은 시스템을 사용하는 것입니다. 당신의 가치에 맞는 구조가 발견될 때, 당신은 세상에서 실제로 움직일 수 있게 됩니다.',
+    ],
+  };
+  const d = details[type];
+  if (!d || !d[idx]) return '';
+  return d[idx];
+}
+
+// ── 워크북 생성기 ──
+function buildWorkbook(type) {
+  const questions = {
+    LOGIC: [
+      { q: '지난 한 주, 당신이 논리적으로 맞았지만 관계에 상처를 준 순간이 있었나요?', hint: '무슨 일이 있었는지, 상대방은 어떻게 느꼈을지 써보세요.' },
+      { q: '당신이 침묵할 때, 주변 사람들은 어떻게 반응하나요?', hint: '그 반응이 당신에게 무엇을 알려주나요?' },
+      { q: '감정적으로 취약해졌을 때 당신은 어떻게 대응하나요?', hint: '그 패턴은 어디서 배웠나요?' },
+      { q: '논리가 아니라 따뜻함으로 상황을 해결한 마지막 경험은?', hint: '그때 어떤 기분이었나요?' },
+    ],
+    HARMONY: [
+      { q: '최근 "아니오"라고 말하고 싶었지만 "예"라고 한 적이 있나요?', hint: '그 이면에 무슨 두려움이 있었나요?' },
+      { q: '당신이 가장 자주 희생하는 것은 무엇인가요?', hint: '그것이 자발적인 선택인가요, 아니면 기대에 의한 것인가요?' },
+      { q: '당신 자신을 위해 뭔가를 할 때 죄책감을 느끼나요?', hint: '그 죄책감의 목소리는 누구처럼 들리나요?' },
+      { q: '경계를 명확히 했을 때 관계가 더 나아진 경험이 있나요?', hint: '없다면, 경계를 그었을 때 어떤 일이 일어날 것 같나요?' },
+    ],
+    LEADER: [
+      { q: '마지막으로 진정으로 쉰 게 언제인가요?', hint: '그때 어떤 감정이 올라왔나요?' },
+      { q: '당신이 추구하는 결과들이 진정 당신이 원하는 것인가요?', hint: '아니라면, 무엇이 당신을 그 방향으로 이끌었나요?' },
+      { q: '팀원이나 가족이 당신에 대해 알지 못하는 것은 무엇인가요?', hint: '왜 그것을 드러내지 않았나요?' },
+      { q: '성공 이후 공허함을 느낀 적이 있나요?', hint: '그 공허함이 무엇을 원한다고 말하는 것 같나요?' },
+    ],
+    SOUL: [
+      { q: '당신의 가치가 인정받지 못했다고 느낀 최근 경험은?', hint: '그때 어떻게 반응했나요?' },
+      { q: '시작하고 싶지만 계속 미루고 있는 것이 있나요?', hint: '무엇이 막고 있나요? 의미가 없어서인가요, 아니면 두려움인가요?' },
+      { q: '당신의 깊이를 세상에 보여줄 수 있는 가장 작은 행동은?', hint: '오늘 당장 할 수 있는 것으로요.' },
+      { q: '실용적인 시스템이 당신의 가치를 배신한다고 느끼나요?', hint: '어떤 시스템이라면 당신의 본질과 함께 작동할 수 있을까요?' },
+    ],
+  };
+
+  const typeQs = questions[type] || [
+    { q: '당신의 그림자 기능이 가장 강하게 올라오는 상황은 언제인가요?', hint: '구체적인 상황을 떠올려보세요.' },
+    { q: '그림자가 통합됐을 때 당신의 삶은 어떻게 달라질까요?', hint: '최대한 구체적으로 그려보세요.' },
+    { q: '당신이 진정으로 성장하려면 무엇을 놓아줘야 하나요?', hint: '그것을 놓기가 두려운 이유는 무엇인가요?' },
+    { q: '10년 후의 통합된 나에게 오늘의 나는 무엇을 말해야 할까요?', hint: '솔직하게 써보세요.' },
+  ];
+
+  return typeQs.map((item, i) => `
+    <div class="workbook-card">
+      <div class="workbook-q">Q${i+1}. ${item.q}</div>
+      <div class="workbook-hint">${item.hint}</div>
+      <div style="margin-top:14px;background:rgba(255,255,255,.03);border-radius:8px;padding:12px 14px;min-height:60px;border:1px solid var(--border);font-size:13px;color:var(--silver);">
+        (여기에 적어보세요)
+      </div>
+    </div>`).join('');
+}
+
+// ── 실천 가이드 ──
+function buildActionGuide(type) {
+  const guides = {
+    LOGIC: [
+      '오늘 대화에서 상대방의 말에 먼저 공감한 뒤 의견을 말해보세요. "그렇게 느꼈구나"가 시작점입니다.',
+      '누군가 감정적으로 이야기할 때, 해결책보다 "계속 이야기해봐"라고 말하는 연습을 해보세요.',
+      '일주일에 한 번, 자신의 감정 상태를 일기로 써보세요. 관찰하는 것만으로 Fe가 깨어납니다.',
+      '가까운 사람에게 "오늘 어땠어?"를 진심으로 물어보고, 대화가 어디로 가는지 따라가보세요.',
+      '분석 전에 잠시 멈추는 연습: "이 순간 상대가 원하는 것은 이해인가, 해결인가?"',
+    ],
+    HARMONY: [
+      '이번 주 한 번만: 부탁을 받았을 때 바로 수락하지 말고 "생각해볼게요"라고 말해보세요.',
+      '"나는 ___할 때 불편하다"는 문장을 완성해보세요. 매일 한 문장씩.',
+      '혼자만의 시간을 의도적으로 스케줄에 넣어보세요. 죄책감 없이.',
+      '자신에게 해주는 것을 먼저 하나 고르세요. 그것이 오늘의 Ti 통합입니다.',
+      '상대방의 감정 속으로 "빠져들지" 않고 옆에 "함께 있는" 차이를 연습해보세요.',
+    ],
+    LEADER: [
+      '오늘 10분, 결과와 관계없이 당신 자신에게 집중하는 시간을 가져보세요.',
+      '"이것은 내가 원하는 것인가, 아니면 내가 해야 한다고 생각하는 것인가?"를 매 결정에 물어보세요.',
+      '팀원이나 가족에게 취약한 면을 작게 드러내보세요. 완벽하지 않아도 됩니다.',
+      '이번 주 한 가지, 효율이 아닌 의미를 기준으로 결정해보세요.',
+      '감사 일기: 오늘 당신이 통제한 것이 아니라, 받은 것을 세 가지 써보세요.',
+    ],
+    SOUL: [
+      '오늘 당신의 아이디어나 가치를 세상에 1%만 더 드러내보세요. 글, 말, 행동 모두 가능합니다.',
+      '당신이 가진 깊이를 10분 안에 실행할 수 있는 가장 작은 단위로 쪼개보세요.',
+      '당신의 가치에 맞는 루틴을 하나 만들어보세요. 완벽하지 않아도, 오늘 시작하면 됩니다.',
+      '"나는 이것을 잘 한다"는 문장을 매일 아침 거울 앞에서 말해보세요.',
+      '생산성 도구를 하나 써보세요. 부담 없이, 3일만 실험한다는 마음으로.',
+    ],
+  };
+
+  const g = guides[type] || [
+    '오늘 그림자 기능이 필요한 상황을 하나 찾아서 의식적으로 시도해보세요.',
+    '일주일에 한 번, 자신의 패턴을 관찰하는 시간 10분을 가져보세요.',
+    '가장 가까운 사람에게 당신의 그림자 기능에 대해 솔직히 이야기해보세요.',
+    '그림자 통합 일기: 오늘 무의식적 반응이 일어난 순간을 기록해보세요.',
+    '전문가의 도움(코칭, 상담)을 고려해보세요. 그림자 통합은 혼자서도, 함께서도 가능합니다.',
+  ];
+
+  return `<div class="content-block">
+    <ul class="action-list">
+      ${g.map((item, i) => `
+        <li>
+          <span class="action-num">${i+1}</span>
+          <span>${item}</span>
+        </li>`).join('')}
+    </ul>
+  </div>`;
+}
+
+// ── 커플 충돌 상세 ──
+function buildCoupleConflictDetail(tA, tB) {
+  const combo = [tA, tB].sort().join('-');
+  const details = {
+    'HARMONY-LOGIC': `
+      <div class="pattern-card">
+        <div class="pattern-num">충돌 패턴 1</div>
+        <div class="pattern-title">LOGIC의 침묵 vs HARMONY의 불안</div>
+        <div class="pattern-body">LOGIC이 생각을 정리하기 위해 조용해질 때, HARMONY는 "화가 났나? 날 싫어하나?"라고 해석합니다. LOGIC은 의도가 없고, HARMONY는 실제로 불안합니다. 두 사람 모두 틀리지 않았습니다.</div>
+      </div>
+      <div class="pattern-card">
+        <div class="pattern-num">충돌 패턴 2</div>
+        <div class="pattern-title">해결책 vs 공감</div>
+        <div class="pattern-body">HARMONY가 감정을 이야기할 때, LOGIC은 즉시 문제를 해결하려 합니다. HARMONY가 원하는 것은 해결책이 아니라 "그랬구나"입니다. 이 오해 하나가 수백 번의 갈등을 만듭니다.</div>
+      </div>`,
+    'LEADER-SOUL': `
+      <div class="pattern-card">
+        <div class="pattern-num">충돌 패턴 1</div>
+        <div class="pattern-title">속도의 차이</div>
+        <div class="pattern-body">LEADER는 빠르게 결정하고 실행합니다. SOUL은 의미를 충분히 느끼고 나서 움직입니다. LEADER는 SOUL을 "느리고 비효율적"으로, SOUL은 LEADER를 "얕고 강압적"으로 느낄 수 있습니다.</div>
+      </div>
+      <div class="pattern-card">
+        <div class="pattern-num">충돌 패턴 2</div>
+        <div class="pattern-title">인정의 언어</div>
+        <div class="pattern-body">LEADER는 결과로 사랑을 표현합니다. SOUL은 존재 자체로 사랑을 원합니다. "열심히 일하는 게 사랑이지"와 "그냥 나를 있는 그대로 봐줘"의 충돌입니다.</div>
+      </div>`,
+  };
+  return details[combo] || '';
+}
+
+// ── 커플 소통 가이드 ──
+function buildCoupleGuide(tA, tB) {
+  const gA = TYPES[tA];
+  const gB = TYPES[tB];
+  return `
+    <div class="content-block">
+      <div class="block-header" style="color:${gA.color}">${tA}에게: 파트너와 더 잘 연결되는 법</div>
+      <ul class="action-list">
+        <li><span class="action-num">1</span><span>파트너가 감정을 이야기할 때, 먼저 "그랬구나, 많이 힘들었겠다"라고 말해보세요. 해결은 그 다음입니다.</span></li>
+        <li><span class="action-num">2</span><span>당신이 침묵이 필요할 때, "지금 생각 정리 중이야. 30분 후에 이야기하자"라고 말해주세요.</span></li>
+        <li><span class="action-num">3</span><span>파트너의 그림자(${gB.shadow.split(':')[0]})를 공격이 아닌 성장의 기회로 바라보세요.</span></li>
+      </ul>
+    </div>
+    <div class="content-block">
+      <div class="block-header" style="color:${gB.color}">${tB}에게: 파트너와 더 잘 연결되는 법</div>
+      <ul class="action-list">
+        <li><span class="action-num">1</span><span>파트너의 방식이 차갑게 느껴질 때, "지금 날 싫어하는 건 아니지?"라고 직접 물어보세요. 당신의 불안을 말로 꺼내면 관계가 열립니다.</span></li>
+        <li><span class="action-num">2</span><span>파트너에게 "해결책 말고, 그냥 들어줘"라고 미리 말하는 연습을 해보세요.</span></li>
+        <li><span class="action-num">3</span><span>파트너의 강점(${gA.tagline})을 당신의 약점을 보완하는 선물로 바라보세요.</span></li>
+      </ul>
+    </div>`;
+}
+
+// ── PDF 다운로드 ──
+async function downloadPDF() {
+  const btn = document.getElementById('btn-pdf-nav');
+  btn.textContent = '생성 중...';
+  btn.disabled = true;
+
+  await PDF_LIBS_LOADED;
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const content = document.getElementById('report-content');
+    const canvas = await html2canvas(content, {
+      scale: 1.5,
+      backgroundColor: '#0F121E',
+      useCORS: true,
+      logging: false,
+    });
+
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    const imgW = pageW;
+    const imgH = (canvas.height * pageW) / canvas.width;
+
+    let offset = 0;
+    let remaining = imgH;
+
+    while (remaining > 0) {
+      if (offset > 0) pdf.addPage();
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.88), 'JPEG', 0, -offset, imgW, imgH);
+      offset += pageH;
+      remaining -= pageH;
+    }
+
+    const filename = pMode === 'couple'
+      ? `ShiningShadow_Couple_${pType}_${pTypeB}.pdf`
+      : `ShiningShadow_${pType}${pName ? '_' + pName : ''}.pdf`;
+    pdf.save(filename);
+  } catch(e) {
+    alert('PDF 생성 중 오류가 발생했습니다. 다시 시도해주세요.');
+  }
+
+  btn.textContent = 'PDF 저장';
+  btn.disabled = false;
+}
+
+// ── 초기화 ──
+window.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

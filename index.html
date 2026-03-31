@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>쉐도우그램 — 나의 심리유형 검사</title>
+  <meta name="robots" content="noindex"/>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:    #0F121E;
+      --bg2:   #161A28;
+      --card:  #1E2233;
+      --text:  #E8E4DC;
+      --gold:  #B8860B;
+      --goldL: #D4A017;
+      --white: #FFFFFF;
+      --silver:#8899AA;
+      --border:rgba(184,134,11,0.18);
+      --red:   #E05040;
+      --green: #4CAF82;
+    }
+    html { scroll-behavior: smooth; font-size: 16px; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Noto Sans KR', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── NAV ── */
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0;
+      background: rgba(15,18,30,0.95);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+    }
+    .nav-logo { font-size: 17px; font-weight: 900; letter-spacing: 0.1em; color: var(--gold); text-decoration: none; }
+    .nav-tag { font-size: 11px; color: var(--silver); letter-spacing: 0.08em; }
+
+    /* ── HERO ── */
+    #hero {
+      max-width: 680px; margin: 0 auto;
+      padding: 60px 20px 40px;
+      text-align: center;
+    }
+    .hero-kicker { font-size: 11px; letter-spacing: 0.18em; color: var(--gold); text-transform: uppercase; margin-bottom: 20px; }
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(32px, 7vw, 52px);
+      font-weight: 600; line-height: 1.2;
+      margin-bottom: 16px;
+    }
+    .hero-title em { color: var(--gold); font-style: italic; }
+    .hero-sub { font-size: 15px; color: var(--silver); line-height: 1.7; max-width: 460px; margin: 0 auto 32px; }
+    .hero-stats { display: flex; gap: 24px; justify-content: center; margin-bottom: 40px; }
+    .stat { text-align: center; }
+    .stat-n { font-size: 22px; font-weight: 700; color: var(--gold); }
+    .stat-l { font-size: 11px; color: var(--silver); letter-spacing: 0.05em; }
+
+    /* ── 코드 입력 화면 ── */
+    #code-section {
+      max-width: 480px; margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+    .code-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 36px 32px;
+      text-align: center;
+    }
+    .code-card h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+    .code-card p { font-size: 14px; color: var(--silver); margin-bottom: 28px; line-height: 1.6; }
+
+    .input-group { margin-bottom: 16px; text-align: left; }
+    .input-group label { display: block; font-size: 12px; color: var(--silver); letter-spacing: 0.05em; margin-bottom: 8px; }
+    .input-group input {
+      width: 100%;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 15px;
+      padding: 14px 16px;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .input-group input:focus { border-color: var(--gold); }
+    .input-group input.error { border-color: var(--red); }
+
+    .code-input-wrap {
+      position: relative;
+    }
+    .code-input-wrap input {
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-size: 18px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .err-msg { font-size: 12px; color: var(--red); margin-top: 6px; min-height: 18px; }
+
+    .btn-primary {
+      width: 100%;
+      background: linear-gradient(135deg, var(--gold), var(--goldL));
+      border: none; border-radius: 12px;
+      color: #000; font-family: 'Noto Sans KR', sans-serif;
+      font-size: 15px; font-weight: 700;
+      padding: 16px; cursor: pointer;
+      transition: opacity .2s, transform .1s;
+      letter-spacing: 0.03em;
+      margin-top: 8px;
+    }
+    .btn-primary:hover { opacity: .9; }
+    .btn-primary:active { transform: scale(.98); }
+    .btn-primary:disabled { opacity: .4; cursor: not-allowed; }
+
+    .divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; }
+    .divider span { font-size: 12px; color: var(--silver); white-space: nowrap; }
+    .divider::before, .divider::after { content:''; flex:1; height:1px; background: var(--border); }
+
+    .btn-secondary {
+      width: 100%;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text); font-family: 'Noto Sans KR', sans-serif;
+      font-size: 14px; font-weight: 500;
+      padding: 14px; cursor: pointer;
+      transition: border-color .2s, background .2s;
+    }
+    .btn-secondary:hover { border-color: var(--gold); background: rgba(184,134,11,.06); }
+
+    /* ── 결제 모달 (Mock) ── */
+    #pay-modal {
+      display: none;
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,.7); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center;
+    }
+    #pay-modal.open { display: flex; }
+    .pay-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px 32px;
+      max-width: 380px; width: 90%;
+      text-align: center;
+    }
+    .pay-box h3 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+    .pay-box .pay-amount { font-size: 36px; font-weight: 900; color: var(--gold); margin: 16px 0; }
+    .pay-box .pay-desc { font-size: 13px; color: var(--silver); margin-bottom: 28px; line-height: 1.6; }
+    .pay-box .pay-tag {
+      display: inline-block;
+      background: rgba(184,134,11,.12);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 11px; color: var(--gold);
+      padding: 4px 12px; margin-bottom: 16px;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── PROGRESS ── */
+    #progress-wrap {
+      max-width: 680px; margin: 0 auto;
+      padding: 12px 20px 0;
+      display: none;
+    }
+    .progress-bar-bg { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; background: var(--gold); border-radius: 2px; transition: width .4s ease; width: 0%; }
+    .progress-meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--silver); margin-top: 8px; }
+
+    /* ── BACK BUTTON ── */
+    #back-wrap {
+      max-width: 680px; margin: 0 auto;
+      padding: 10px 20px 0;
+      display: none;
+    }
+    .btn-prev {
+      background: none; border: none;
+      color: var(--silver); font-size: 14px;
+      font-family: 'Noto Sans KR', sans-serif;
+      cursor: pointer; padding: 8px 0;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .btn-prev:active { color: var(--gold); }
+    .btn-prev.hidden { visibility: hidden; }
+
+    /* ── QUIZ ── */
+    #quiz-section {
+      max-width: 680px; margin: 0 auto;
+      padding: 20px 20px 80px;
+      display: none;
+    }
+    .question-block { display: none; animation: fadeIn .3s ease; }
+    .question-block.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .q-num { font-size: 11px; letter-spacing: 0.15em; color: var(--gold); margin-bottom: 16px; }
+    .q-text { font-size: clamp(17px, 4vw, 22px); font-weight: 500; line-height: 1.55; margin-bottom: 28px; }
+
+    .ab-options { display: flex; flex-direction: column; gap: 12px; }
+    .ab-btn {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 18px 20px;
+      color: var(--text); font-family: 'Noto Sans KR', sans-serif;
+      font-size: 15px; text-align: left; cursor: pointer;
+      display: flex; align-items: flex-start; gap: 14px;
+      transition: border-color .2s, background .2s;
+    }
+    .ab-btn:hover { border-color: var(--gold); background: rgba(184,134,11,.06); }
+    .ab-btn.selected { border-color: var(--gold); background: rgba(184,134,11,.12); }
+    .ab-label {
+      flex-shrink: 0;
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--bg); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: var(--gold);
+    }
+    .ab-btn.selected .ab-label { background: var(--gold); color: #000; border-color: var(--gold); }
+    .ab-text { line-height: 1.55; padding-top: 4px; }
+
+    /* ── RESULT ── */
+    #result-section {
+      max-width: 680px; margin: 0 auto;
+      padding: 40px 20px 80px;
+      display: none;
+    }
+    .result-label { font-size: 11px; letter-spacing: 0.18em; color: var(--silver); margin-bottom: 12px; }
+    .result-type { font-size: clamp(42px, 10vw, 72px); font-weight: 900; letter-spacing: 0.05em; margin-bottom: 4px; }
+    .result-func { font-size: 13px; color: var(--silver); margin-bottom: 32px; }
+
+    .result-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px; margin-bottom: 16px;
+    }
+    .result-card-header { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: var(--gold); margin-bottom: 14px; }
+    .result-card-body { font-size: 16px; line-height: 1.75; color: var(--text); }
+    .result-shadow-body { font-size: 15px; line-height: 1.7; color: var(--silver); }
+
+    .preview-box {
+      background: rgba(184,134,11,.06); border: 1px solid var(--border);
+      border-radius: 14px; padding: 20px; margin-bottom: 24px;
+    }
+    .preview-title { font-size: 11px; letter-spacing: 0.12em; color: var(--gold); margin-bottom: 12px; }
+    .preview-body { font-size: 14px; color: var(--silver); line-height: 1.7; white-space: pre-line; }
+
+    /* CTA */
+    .cta-box {
+      background: linear-gradient(135deg, rgba(184,134,11,.15), rgba(184,134,11,.05));
+      border: 1px solid rgba(184,134,11,.3);
+      border-radius: 20px; padding: 32px 28px; text-align: center;
+      margin-bottom: 32px;
+    }
+    .cta-tag { font-size: 11px; letter-spacing: 0.12em; color: var(--gold); display: block; margin-bottom: 14px; }
+    .cta-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+    .cta-sub { font-size: 14px; color: var(--silver); line-height: 1.6; margin-bottom: 20px; }
+    .cta-bonus {
+      font-size: 13px; color: var(--text);
+      white-space: pre-line; line-height: 1.8;
+      text-align: left; margin-bottom: 24px;
+      padding: 16px 20px;
+      background: rgba(255,255,255,.04);
+      border-radius: 10px;
+    }
+    .btn-buy {
+      display: block; width: 100%;
+      background: linear-gradient(135deg, var(--gold), var(--goldL));
+      border: none; border-radius: 14px;
+      color: #000; font-family: 'Noto Sans KR', sans-serif;
+      font-size: 16px; font-weight: 700;
+      padding: 18px; cursor: pointer;
+      text-decoration: none;
+      transition: opacity .2s; letter-spacing: 0.03em;
+    }
+    .btn-buy:hover { opacity: .9; }
+    .btn-price { font-size: 13px; opacity: .7; font-weight: 400; }
+
+    .btn-restart {
+      display: block; width: 100%; text-align: center;
+      background: none; border: 1px solid var(--border);
+      border-radius: 12px; color: var(--silver);
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 14px; padding: 14px; cursor: pointer;
+      transition: border-color .2s;
+    }
+    .btn-restart:hover { border-color: var(--silver); }
+
+    /* ── 결제 성공 배너 ── */
+    #paid-banner {
+      display: none;
+      background: rgba(76,175,130,.12);
+      border: 1px solid rgba(76,175,130,.3);
+      border-radius: 14px; padding: 16px 20px;
+      margin-bottom: 20px; text-align: center;
+    }
+    #paid-banner .banner-icon { font-size: 24px; margin-bottom: 6px; }
+    #paid-banner p { font-size: 14px; color: var(--green); line-height: 1.6; }
+
+    /* ── 반응형 ── */
+    @media (max-width: 400px) {
+      .code-card { padding: 28px 20px; }
+      .pay-box { padding: 32px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/">SHADOWGRAM</a>
+  <span class="nav-tag">개인 심리유형 검사</span>
+</nav>
+
+<!-- HERO -->
+<div id="hero">
+  <p class="hero-kicker">Shadowgram Self · 개인 검사</p>
+  <h1 class="hero-title">당신 안에 잠들어 있는<br/><em>그림자를 만날 시간</em></h1>
+  <p class="hero-sub">융(Jung) 심리유형 기반 · 28문항 · 8개 유형 · 즉시 결과<br/>나를 가장 빛나게 하는 것, 그리고 나를 가장 방해하는 것.</p>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-n">28</div><div class="stat-l">문항</div></div>
+    <div class="stat"><div class="stat-n">8</div><div class="stat-l">유형</div></div>
+    <div class="stat"><div class="stat-n">4</div><div class="stat-l">차원 분석</div></div>
+  </div>
+</div>
+
+<!-- 코드 입력 -->
+<div id="code-section">
+  <div class="code-card">
+    <h2>검사 코드를 입력하세요</h2>
+    <p>발급받은 검사 코드를 입력하면 바로 시작할 수 있습니다.<br/>코드가 없다면 아래에서 구매하세요.</p>
+
+    <div class="input-group">
+      <label>이름 (또는 닉네임)</label>
+      <input type="text" id="input-name" placeholder="홍길동" autocomplete="off"/>
+    </div>
+    <div class="input-group">
+      <label>검사 코드</label>
+      <div class="code-input-wrap">
+        <input type="text" id="input-code" placeholder="SGI-XXXXXXXX" autocomplete="off" maxlength="14"/>
+      </div>
+      <div class="err-msg" id="code-err"></div>
+    </div>
+
+    <button class="btn-primary" id="btn-start-code" onclick="startWithCode()">코드로 검사 시작하기</button>
+
+    <div class="divider"><span>코드가 없나요?</span></div>
+
+    <button class="btn-secondary" onclick="openPayModal()">
+      검사 코드 구매하기 <span style="color:var(--gold); margin-left:6px;">₩19,900</span>
+    </button>
+  </div>
+</div>
+
+<!-- 결제 모달 (Beta Mock) -->
+<div id="pay-modal">
+  <div class="pay-box">
+    <span class="pay-tag">BETA 테스트</span>
+    <h3>쉐도우그램 개인 검사</h3>
+    <div class="pay-amount">₩19,900</div>
+    <p class="pay-desc">쉐도우그램 SELF 검사 + 전체 보고서 (웹 + PDF)<br/>구매 후 즉시 코드 발급됩니다.</p>
+    <button class="btn-primary" onclick="mockPaySuccess()" style="margin-bottom:12px;">
+      결제하기 (베타 테스트)
+    </button>
+    <button class="btn-secondary" onclick="closePayModal()">취소</button>
+  </div>
+</div>
+
+<!-- 진행 바 -->
+<div id="progress-wrap">
+  <div class="progress-bar-bg">
+    <div class="progress-bar-fill" id="progress-fill"></div>
+  </div>
+  <div class="progress-meta">
+    <span id="progress-label">문항 1 / 28</span>
+    <span id="dim-label"></span>
+    <span id="progress-pct">0%</span>
+  </div>
+</div>
+
+<!-- 뒤로 버튼 -->
+<div id="back-wrap">
+  <button class="btn-prev hidden" id="btn-prev" onclick="goPrev()">← 이전 문항</button>
+</div>
+
+<!-- 검사 문항 -->
+<div id="quiz-section"></div>
+
+<!-- 결과 -->
+<div id="result-section">
+  <p class="result-label">나의 쉐도우그램 유형</p>
+  <div class="result-type" id="res-type"></div>
+  <p class="result-func" id="res-func"></p>
+
+  <div class="result-card">
+    <div class="result-card-header" id="res-light-header">✦ 나의 빛 — 지배 기능</div>
+    <div class="result-card-body" id="res-light"></div>
+  </div>
+
+  <div class="result-card">
+    <div class="result-card-header" style="color:var(--silver);">⚡ 나의 그림자 — 통합해야 할 기능</div>
+    <div class="result-shadow-body" id="res-shadow"></div>
+  </div>
+
+  <div class="result-card">
+    <div class="result-card-header" style="color:var(--red);">◈ 통합하지 않은 그림자의 대가</div>
+    <div class="result-shadow-body" id="res-pain"></div>
+  </div>
+
+  <div class="preview-box">
+    <div class="preview-title">▸ 전체 보고서 미리보기 — 4가지 무의식 패턴</div>
+    <div class="preview-body" id="res-preview"></div>
+  </div>
+
+  <!-- 결제 성공 배너 (Mock) -->
+  <div id="paid-banner">
+    <div class="banner-icon">✓</div>
+    <p>결제가 완료됐습니다. 전체 보고서를 확인하세요.</p>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-box" id="res-cta-box">
+    <span class="cta-tag" id="res-cta-label">SHADOWGRAM SELF · 전체 보고서</span>
+    <div class="cta-title" id="res-cta-title"></div>
+    <div class="cta-sub" id="res-cta-sub"></div>
+    <div class="cta-bonus" id="res-cta-bonus"></div>
+    <button class="btn-buy" id="res-buy-btn" onclick="handleBuyClick()">
+      전체 보고서 열람하기 <span class="btn-price">· ₩19,900</span>
+    </button>
+  </div>
+
+  <button class="btn-restart" onclick="restartQuiz()">↺ 처음부터 다시 검사하기</button>
+</div>
+
+<script src="sg-data.js"></script>
+<script>
+// ── 상태 ──
+let dimScores = [0,0,0,0];
+let answers = [];
+let current = 0;
+let sgUser = { name: '', code: '', type: '' };
+let paidAccess = false;
+
+// ── 코드 시작 ──
+function startWithCode() {
+  const name = document.getElementById('input-name').value.trim();
+  const code = document.getElementById('input-code').value.trim().toUpperCase();
+  const err = document.getElementById('code-err');
+  const codeInput = document.getElementById('input-code');
+
+  err.textContent = '';
+  codeInput.classList.remove('error');
+
+  if (!name) {
+    document.getElementById('input-name').focus();
+    return;
+  }
+  if (!code) {
+    err.textContent = '코드를 입력해주세요.';
+    codeInput.classList.add('error');
+    return;
+  }
+
+  const result = validateCode(code);
+  if (!result.valid) {
+    err.textContent = result.reason;
+    codeInput.classList.add('error');
+    return;
+  }
+  if (result.type !== 'I') {
+    err.textContent = '개인 검사 코드가 아닙니다. 커플 검사는 couple.html을 이용하세요.';
+    codeInput.classList.add('error');
+    return;
+  }
+
+  // 코드 사용 처리
+  markCodeUsed(code, { name });
+  sgUser = { name, code, type: 'I' };
+  paidAccess = true;
+
+  startQuiz();
+}
+
+// ── Mock 결제 ──
+function openPayModal() { document.getElementById('pay-modal').classList.add('open'); }
+function closePayModal() { document.getElementById('pay-modal').classList.remove('open'); }
+
+function mockPaySuccess() {
+  closePayModal();
+  // 베타: 즉시 코드 발급 + 사용 처리
+  const code = issueCode('I', '베타_직접결제');
+  markCodeUsed(code, { name: document.getElementById('input-name').value.trim() || '검사자' });
+
+  const name = document.getElementById('input-name').value.trim() || '검사자';
+  document.getElementById('input-code').value = code;
+  sgUser = { name, code, type: 'I' };
+  paidAccess = true;
+  startQuiz();
+}
+
+// ── 검사 시작 ──
+function startQuiz() {
+  dimScores = [0,0,0,0];
+  answers = new Array(QUESTIONS.length).fill(null);
+  current = 0;
+
+  document.getElementById('hero').style.display = 'none';
+  document.getElementById('code-section').style.display = 'none';
+  document.getElementById('progress-wrap').style.display = 'block';
+  document.getElementById('back-wrap').style.display = 'block';
+  document.getElementById('quiz-section').style.display = 'block';
+
+  buildQuiz();
+  goToQuestion(0);
+}
+
+function buildQuiz() {
+  const sec = document.getElementById('quiz-section');
+  sec.innerHTML = '';
+  QUESTIONS.forEach((q, qi) => {
+    const div = document.createElement('div');
+    div.className = 'question-block';
+    div.id = 'q-' + qi;
+    div.innerHTML = `
+      <p class="q-num">문항 ${qi + 1} / ${QUESTIONS.length}</p>
+      <p class="q-text">${q.text}</p>
+      <div class="ab-options">
+        <button class="ab-btn" onclick="selectOption(${qi},'a',this)">
+          <span class="ab-label">A</span>
+          <span class="ab-text">${q.a}</span>
+        </button>
+        <button class="ab-btn" onclick="selectOption(${qi},'b',this)">
+          <span class="ab-label">B</span>
+          <span class="ab-text">${q.b}</span>
+        </button>
+      </div>`;
+    sec.appendChild(div);
+  });
+}
+
+function selectOption(qi, choice, btn) {
+  document.querySelectorAll(`#q-${qi} .ab-btn`).forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  const dimIdx = QUESTIONS[qi].dim - 1;
+  if (answers[qi] === 'a') dimScores[dimIdx]--;
+  answers[qi] = choice;
+  if (choice === 'a') dimScores[dimIdx]++;
+  setTimeout(() => {
+    if (qi < QUESTIONS.length - 1) goToQuestion(qi + 1);
+    else showResult();
+  }, 280);
+}
+
+function goToQuestion(idx) {
+  document.querySelectorAll('.question-block').forEach(b => b.classList.remove('active'));
+  document.getElementById('q-' + idx).classList.add('active');
+  current = idx;
+  updateProgress(idx);
+  const prev = document.getElementById('btn-prev');
+  if (idx === 0) prev.classList.add('hidden');
+  else prev.classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function goPrev() { if (current > 0) goToQuestion(current - 1); }
+
+function updateProgress(idx) {
+  const pct = Math.round((idx / QUESTIONS.length) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = `문항 ${idx + 1} / ${QUESTIONS.length}`;
+  document.getElementById('progress-pct').textContent = pct + '%';
+  document.getElementById('dim-label').textContent = DIM_LABELS[QUESTIONS[idx].dim - 1];
+}
+
+function showResult() {
+  const d = dimScores.map(s => s >= 4 ? 'a' : 'b');
+  const winner = getType(d[0], d[1], d[2], d[3]);
+  const data = TYPES[winner];
+  sgUser.type = winner;
+
+  try {
+    localStorage.setItem('sg_type', winner);
+    localStorage.setItem('sg_name', sgUser.name);
+  } catch(e) {}
+
+  // 화면 전환
+  document.getElementById('quiz-section').style.display = 'none';
+  document.getElementById('progress-wrap').style.display = 'none';
+  document.getElementById('back-wrap').style.display = 'none';
+
+  const rs = document.getElementById('result-section');
+  rs.style.display = 'block';
+
+  document.getElementById('res-type').textContent = winner;
+  document.getElementById('res-type').style.color = data.color;
+  document.getElementById('res-func').textContent = data.func + ' · ' + data.tagline;
+  document.getElementById('res-light-header').style.color = data.color;
+  document.getElementById('res-light').textContent = data.light;
+  document.getElementById('res-shadow').textContent = data.shadow;
+  document.getElementById('res-pain').textContent = data.pain;
+  document.getElementById('res-preview').textContent = data.preview;
+
+  document.getElementById('res-cta-label').textContent = `SHADOWGRAM SELF · 전체 보고서 · ${winner}`;
+  document.getElementById('res-cta-title').textContent = data.ctaTitle;
+  document.getElementById('res-cta-sub').textContent = data.ctaSub;
+  document.getElementById('res-cta-bonus').textContent = data.bonus;
+
+  // 이미 결제한 경우 바로 보고서로
+  if (paidAccess) {
+    document.getElementById('paid-banner').style.display = 'block';
+    const btn = document.getElementById('res-buy-btn');
+    btn.textContent = '내 전체 보고서 열람하기 →';
+    btn.style.removeProperty('opacity');
+  }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function handleBuyClick() {
+  if (paidAccess) {
+    // 보고서 페이지로 이동
+    const type = sgUser.type || localStorage.getItem('sg_type');
+    window.location.href = `report.html?type=${type}&name=${encodeURIComponent(sgUser.name)}&paid=1`;
+  } else {
+    openPayModal();
+  }
+}
+
+function restartQuiz() {
+  paidAccess = false;
+  document.getElementById('result-section').style.display = 'none';
+  document.getElementById('paid-banner').style.display = 'none';
+  document.getElementById('hero').style.display = 'block';
+  document.getElementById('code-section').style.display = 'block';
+  document.getElementById('input-code').value = '';
+  document.getElementById('input-name').value = '';
+}
+
+// 코드 입력 포맷팅
+document.getElementById('input-code').addEventListener('input', function() {
+  let v = this.value.toUpperCase().replace(/[^A-Z0-9\-]/g, '');
+  this.value = v;
+});
+</script>
+</body>
+</html>
