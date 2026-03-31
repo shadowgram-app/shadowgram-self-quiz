@@ -293,33 +293,8 @@
   <p>IPIP 50문항 · 과학적 성격 분석 + 쉐도우그램 유형</p>
 </header>
 
-<!-- ① 이름 입력 (코드 없이 바로 시작) -->
-<section id="nameSection" class="section active">
-  <div class="container">
-    <div class="card" style="text-align:center; padding:36px 24px;">
-      <div style="font-size:36px; margin-bottom:14px;">✨</div>
-      <h2 style="font-size:20px; margin-bottom:10px;">이름을 알려주세요</h2>
-      <p style="margin-bottom:20px;">결과 보고서에 표시될 이름이에요.</p>
-      <div class="code-input-wrap">
-        <input type="text" id="nameInput" placeholder="홍길동" maxlength="10" style="letter-spacing:0;"
-          onkeypress="if(event.key==='Enter')startQuiz()">
-        <button class="btn" onclick="startQuiz()">시작</button>
-      </div>
-      <div class="error-msg" id="nameError"></div>
-    </div>
-    <div class="card" style="padding:20px;">
-      <p style="font-size:13px; line-height:1.8; color:var(--muted);">
-        🧠 <strong style="color:var(--text);">IPIP Big5 검사</strong>란?<br>
-        국제성격항목풀(IPIP)의 50문항으로 구성된 과학적 성격 모델입니다.
-        개방성(O), 성실성(C), 외향성(E), 친화성(A), 신경증(N) 5가지 요인을
-        측정하며, 쉐도우그램 8유형과 연결하여 당신의 빛과 그림자를 함께 탐색합니다.
-      </p>
-    </div>
-  </div>
-</section>
-
-<!-- ③ 검사 -->
-<section id="quizSection" class="section">
+<!-- ① 검사 -->
+<section id="quizSection" class="section active">
   <div class="container">
     <div class="progress-wrap">
       <div class="progress-info">
@@ -583,20 +558,15 @@ function showSection(id) {
   window.scrollTo(0, 0);
 }
 
-// (코드 입력 불필요 — 이름 입력 화면이 첫 단계)
-
-// ── 이름 입력 → 검사 시작 ──
+// ── 검사 초기화 (페이지 로드 시 자동 실행) ──
 function startQuiz() {
-  const name = document.getElementById('nameInput').value.trim();
-  const err = document.getElementById('nameError');
-  if (!name) { err.textContent = '이름을 입력해주세요.'; return; }
-  userName = name;
-  err.textContent = '';
   answers = new Array(50).fill(null);
   currentQ = 0;
   renderQ();
   showSection('quizSection');
 }
+
+window.addEventListener('DOMContentLoaded', () => startQuiz());
 
 // ── 문항 렌더링 ──
 const DIM_ORDER_LABELS = { E:'외향성 (E)', A:'친화성 (A)', C:'성실성 (C)', N:'신경증 (N)', O:'개방성 (O)' };
@@ -669,7 +639,7 @@ function renderResult(scores) {
 
   // 헤더
   document.getElementById('resTypeBadge').textContent = sgCode;
-  document.getElementById('resName').textContent = userName + '님의 쉐도우그램 유형';
+  document.getElementById('resName').textContent = '나의 쉐도우그램 유형';
   if (typeData) {
     document.getElementById('resTypeName').textContent = typeData.name || sgCode;
     document.getElementById('resTypeEmoji').textContent = typeData.emoji || '🌑';
@@ -914,7 +884,6 @@ function goToFullReport() {
   const sgMap = oceanToSgType(finalScores);
   const params = new URLSearchParams({
     type: sgMap.code,
-    name: userName,
     paid: '1',
     from: 'big5',
     nScore: finalScores.N
@@ -923,11 +892,8 @@ function goToFullReport() {
 }
 
 function restartQuiz() {
-  answers = new Array(50).fill(null);
-  currentQ = 0;
   finalScores = null;
-  document.getElementById('nameInput').value = '';
-  showSection('nameSection');
+  startQuiz();
 }
 </script>
 </body>
