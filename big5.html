@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>쉐도우그램 Big5 성격 검사</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="sg-data.js"></script>
+<style>
+  :root {
+    --bg: #0f0f1a;
+    --card: #1a1a2e;
+    --card2: #16213e;
+    --accent: #7c3aed;
+    --accent2: #a855f7;
+    --gold: #f59e0b;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --border: rgba(124,58,237,0.3);
+    --shadow-low: #10b981;
+    --shadow-mid: #f59e0b;
+    --shadow-high: #ef4444;
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* ── 헤더 ── */
+  header {
+    background: linear-gradient(135deg, #1a0533 0%, #0f0f1a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 24px;
+    text-align: center;
+  }
+  header .logo { font-size: 13px; color: var(--accent2); letter-spacing: 4px; text-transform: uppercase; margin-bottom: 6px; }
+  header h1 { font-size: 22px; font-weight: 700; }
+  header p { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+  /* ── 섹션 공통 ── */
+  .section { display: none; }
+  .section.active { display: block; }
+  .container { max-width: 680px; margin: 0 auto; padding: 28px 20px; }
+
+  /* ── 카드 ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .card h2 { font-size: 18px; margin-bottom: 10px; }
+  .card p { font-size: 14px; color: var(--muted); line-height: 1.7; }
+
+  /* ── 코드 입력 ── */
+  #codeSection .card { text-align: center; padding: 40px 24px; }
+  .code-icon { font-size: 48px; margin-bottom: 16px; }
+  .code-input-wrap { display: flex; gap: 10px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
+  input[type=text] {
+    background: #0f0f1a;
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 12px 18px;
+    font-size: 16px;
+    width: 220px;
+    text-align: center;
+    letter-spacing: 2px;
+    outline: none;
+    transition: border .2s;
+  }
+  input[type=text]:focus { border-color: var(--accent2); }
+  .btn {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity .2s, transform .1s;
+  }
+  .btn:hover { opacity: .9; transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent2);
+    border-radius: 10px;
+    padding: 11px 20px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .btn-outline:hover { background: rgba(124,58,237,.15); }
+  .error-msg { color: #f87171; font-size: 13px; margin-top: 10px; min-height: 18px; }
+
+  /* ── 이름 입력 ── */
+  #nameSection .card { text-align: center; padding: 36px 24px; }
+
+  /* ── 검사 ── */
+  .progress-wrap { margin-bottom: 20px; }
+  .progress-info { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  .progress-bar { background: #1e1e35; border-radius: 99px; height: 6px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 99px; transition: width .4s; }
+
+  .q-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 24px;
+  }
+  .q-dim-label {
+    display: inline-block;
+    font-size: 11px;
+    color: var(--accent2);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: rgba(168,85,247,.12);
+    border-radius: 6px;
+    padding: 3px 10px;
+    margin-bottom: 14px;
+  }
+  .q-text { font-size: 17px; font-weight: 600; line-height: 1.6; margin-bottom: 20px; }
+
+  /* ── Likert 척도 ── */
+  .likert-scale { display: flex; flex-direction: column; gap: 10px; }
+  .likert-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); padding: 0 4px; margin-bottom: 4px; }
+  .likert-options { display: flex; gap: 10px; justify-content: center; }
+  .likert-btn {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .15s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+  }
+  .likert-btn .lbl { font-size: 9px; font-weight: 400; }
+  .likert-btn:hover { border-color: var(--accent2); color: var(--accent2); background: rgba(168,85,247,.1); }
+  .likert-btn.selected { border-color: var(--accent2); background: var(--accent); color: #fff; }
+  .likert-btn[data-v="1"].selected { background: #1e3a5f; border-color: #3b82f6; }
+  .likert-btn[data-v="2"].selected { background: #1e2e40; border-color: #60a5fa; }
+  .likert-btn[data-v="3"].selected { background: #2a1f40; border-color: var(--accent); }
+  .likert-btn[data-v="4"].selected { background: #3b1a5f; border-color: var(--accent2); }
+  .likert-btn[data-v="5"].selected { background: #4c1264; border-color: #d946ef; }
+
+  .q-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
+  .q-counter { font-size: 12px; color: var(--muted); }
+
+  /* ── 로딩 ── */
+  #loadingSection .container { text-align: center; padding: 80px 20px; }
+  .loading-orbit { width: 64px; height: 64px; border-radius: 50%; border: 3px solid var(--border); border-top-color: var(--accent2); animation: spin 1s linear infinite; margin: 0 auto 20px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── 결과 ── */
+  .result-header {
+    background: linear-gradient(135deg, #2d1054, #1a0533);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px 24px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .result-type-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    border-radius: 99px;
+    padding: 6px 20px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    margin-bottom: 12px;
+  }
+  .result-name { font-size: 28px; font-weight: 800; margin-bottom: 6px; }
+  .result-subtitle { font-size: 14px; color: var(--muted); }
+
+  /* ── 차트 영역 ── */
+  .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  @media (max-width: 560px) { .charts-grid { grid-template-columns: 1fr; } }
+  .chart-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+  }
+  .chart-card h3 { font-size: 13px; color: var(--muted); text-align: center; margin-bottom: 14px; letter-spacing: 1px; text-transform: uppercase; }
+  .chart-wrap { position: relative; height: 220px; }
+
+  /* ── OCEAN 점수 바 ── */
+  .ocean-bars { display: flex; flex-direction: column; gap: 14px; }
+  .ocean-item {}
+  .ocean-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+  .ocean-label { font-size: 13px; font-weight: 600; }
+  .ocean-label span { font-size: 11px; color: var(--muted); font-weight: 400; margin-left: 6px; }
+  .ocean-score { font-size: 13px; font-weight: 700; }
+  .ocean-bar-track { background: #1e1e35; border-radius: 99px; height: 8px; overflow: hidden; }
+  .ocean-bar-fill { height: 100%; border-radius: 99px; transition: width 1s cubic-bezier(.34,1.56,.64,1); }
+
+  /* ── 그림자 강도 카드 ── */
+  .shadow-card {
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 16px;
+    border: 1.5px solid;
+  }
+  .shadow-card.low { background: rgba(16,185,129,.08); border-color: rgba(16,185,129,.35); }
+  .shadow-card.mid { background: rgba(245,158,11,.08); border-color: rgba(245,158,11,.35); }
+  .shadow-card.high { background: rgba(239,68,68,.08); border-color: rgba(239,68,68,.35); }
+  .shadow-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .shadow-badge { font-size: 28px; }
+  .shadow-title { font-size: 17px; font-weight: 700; }
+  .shadow-subtitle { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .shadow-meter { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .shadow-meter-bar { flex: 1; background: #1e1e35; border-radius: 99px; height: 10px; overflow: hidden; }
+  .shadow-meter-fill { height: 100%; border-radius: 99px; transition: width 1.2s cubic-bezier(.34,1.56,.64,1); }
+  .shadow-meter-fill.low { background: linear-gradient(90deg, #10b981, #34d399); }
+  .shadow-meter-fill.mid { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+  .shadow-meter-fill.high { background: linear-gradient(90deg, #ef4444, #f87171); }
+  .shadow-meter-pct { font-size: 14px; font-weight: 700; min-width: 36px; text-align: right; }
+  .shadow-section-title { font-size: 12px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; margin-top: 12px; }
+  .shadow-message { font-size: 15px; line-height: 1.75; color: var(--text); font-style: italic; }
+  .shadow-tips { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .shadow-tips li { font-size: 14px; line-height: 1.6; color: var(--text); padding-left: 20px; position: relative; }
+  .shadow-tips li::before { content: '→'; position: absolute; left: 0; color: var(--accent2); font-style: normal; }
+
+  /* ── 유형 설명 ── */
+  .type-detail-card {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .type-detail-card .tag { font-size: 11px; letter-spacing: 2px; color: var(--accent2); text-transform: uppercase; margin-bottom: 8px; }
+  .type-detail-card h2 { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+  .type-detail-card .emoji { font-size: 40px; margin-bottom: 12px; }
+  .type-detail-card p { font-size: 14px; color: var(--muted); line-height: 1.75; }
+
+  /* ── 치원 설명 태그 ── */
+  .dim-tag {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-right: 6px;
+    margin-bottom: 6px;
+  }
+  .dim-E { background: rgba(251,191,36,.15); color: #fbbf24; }
+  .dim-I { background: rgba(147,197,253,.15); color: #93c5fd; }
+  .dim-N-type { background: rgba(167,243,208,.15); color: #6ee7b7; }
+  .dim-S { background: rgba(253,186,116,.15); color: #fdba74; }
+  .dim-F { background: rgba(249,168,212,.15); color: #f9a8d4; }
+  .dim-T { background: rgba(165,243,252,.15); color: #a5f3fc; }
+  .dim-J { background: rgba(196,181,253,.15); color: #c4b5fd; }
+  .dim-P { background: rgba(110,231,183,.15); color: #6ee7b7; }
+
+  /* ── 구분선 ── */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+
+  /* ── 하단 버튼 ── */
+  .result-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+  .result-actions .btn { flex: 1; min-width: 140px; text-align: center; }
+
+  /* ── 모바일 ── */
+  @media (max-width: 440px) {
+    .likert-btn { width: 44px; height: 44px; font-size: 13px; }
+    .q-text { font-size: 15px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Shadowgram</div>
+  <h1>Big5 성격 검사</h1>
+  <p>IPIP 50문항 · 과학적 성격 분석 + 쉐도우그램 유형</p>
+</header>
+
+<!-- ① 코드 입력 -->
+<section id="codeSection" class="section active">
+  <div class="container">
+    <div class="card" style="text-align:center; padding:40px 24px;">
+      <div class="code-icon">🔮</div>
+      <h2 style="font-size:20px; margin-bottom:10px;">검사 시작</h2>
+      <p>발급받은 검사 코드를 입력하거나<br>베타 체험으로 시작하세요.</p>
+      <div class="code-input-wrap">
+        <input type="text" id="codeInput" placeholder="SGI-XXXXXXXX" maxlength="12"
+          onkeyup="this.value=this.value.toUpperCase()" onkeypress="if(event.key==='Enter')checkCode()">
+        <button class="btn" onclick="checkCode()">확인</button>
+      </div>
+      <div class="error-msg" id="codeError"></div>
+      <div style="margin-top:20px; padding-top:20px; border-top:1px solid var(--border);">
+        <button class="btn-outline" onclick="startBeta()">베타 체험으로 시작 →</button>
+        <p style="font-size:11px; color:var(--muted); margin-top:8px;">코드 없이 검사 결과를 미리 경험해보세요</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ② 이름 입력 -->
+<section id="nameSection" class="section">
+  <div class="container">
+    <div class="card" style="text-align:center; padding:36px 24px;">
+      <div style="font-size:36px; margin-bottom:14px;">✨</div>
+      <h2 style="font-size:20px; margin-bottom:10px;">이름을 알려주세요</h2>
+      <p style="margin-bottom:20px;">결과 보고서에 표시될 이름이에요.</p>
+      <div class="code-input-wrap">
+        <input type="text" id="nameInput" placeholder="홍길동" maxlength="10" style="letter-spacing:0;"
+          onkeypress="if(event.key==='Enter')startQuiz()">
+        <button class="btn" onclick="startQuiz()">시작</button>
+      </div>
+      <div class="error-msg" id="nameError"></div>
+    </div>
+    <div class="card" style="padding:20px;">
+      <p style="font-size:13px; line-height:1.8; color:var(--muted);">
+        🧠 <strong style="color:var(--text);">IPIP Big5 검사</strong>란?<br>
+        국제성격항목풀(IPIP)의 50문항으로 구성된 과학적 성격 모델입니다.
+        개방성(O), 성실성(C), 외향성(E), 친화성(A), 신경증(N) 5가지 요인을
+        측정하며, 쉐도우그램 8유형과 연결하여 당신의 빛과 그림자를 함께 탐색합니다.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ③ 검사 -->
+<section id="quizSection" class="section">
+  <div class="container">
+    <div class="progress-wrap">
+      <div class="progress-info">
+        <span id="progLabel">1 / 50</span>
+        <span id="progPct">0%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+    </div>
+    <div class="q-card">
+      <div class="q-dim-label" id="qDimLabel">개방성</div>
+      <div class="q-text" id="qText"></div>
+      <div class="likert-scale">
+        <div class="likert-labels">
+          <span>전혀 아니다</span>
+          <span>보통</span>
+          <span>매우 그렇다</span>
+        </div>
+        <div class="likert-options" id="likertOptions">
+          <button class="likert-btn" data-v="1" onclick="selectAnswer(1)">1<span class="lbl">전혀</span></button>
+          <button class="likert-btn" data-v="2" onclick="selectAnswer(2)">2<span class="lbl">아니다</span></button>
+          <button class="likert-btn" data-v="3" onclick="selectAnswer(3)">3<span class="lbl">보통</span></button>
+          <button class="likert-btn" data-v="4" onclick="selectAnswer(4)">4<span class="lbl">그렇다</span></button>
+          <button class="likert-btn" data-v="5" onclick="selectAnswer(5)">5<span class="lbl">매우</span></button>
+        </div>
+      </div>
+      <div class="q-nav">
+        <button class="btn-outline" id="prevBtn" onclick="prevQ()" style="visibility:hidden">← 이전</button>
+        <span class="q-counter" id="qCounter">1 / 50</span>
+        <button class="btn" id="nextBtn" onclick="nextQ()" disabled>다음 →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ④ 로딩 -->
+<section id="loadingSection" class="section">
+  <div class="container">
+    <div class="loading-orbit"></div>
+    <p style="font-size:16px; margin-bottom:6px;">분석 중...</p>
+    <p style="font-size:13px; color:var(--muted);">Big5 점수와 쉐도우그램 유형을 계산하고 있어요</p>
+  </div>
+</section>
+
+<!-- ⑤ 결과 -->
+<section id="resultSection" class="section">
+  <div class="container">
+
+    <!-- 유형 헤더 -->
+    <div class="result-header">
+      <div class="result-type-badge" id="resTypeBadge">INTJ</div>
+      <div id="resTypeEmoji" style="font-size:52px; margin: 12px 0;">🌑</div>
+      <div class="result-name" id="resTypeName">전략가</div>
+      <div class="result-subtitle" id="resName">님의 쉐도우그램 유형</div>
+    </div>
+
+    <!-- 차트 -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <h3>📡 Big5 레이더</h3>
+        <div class="chart-wrap"><canvas id="radarChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>📊 요인별 점수</h3>
+        <div class="chart-wrap"><canvas id="barChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- OCEAN 상세 바 -->
+    <div class="card">
+      <h3 style="font-size:14px; margin-bottom:16px; letter-spacing:1px; text-transform:uppercase; color:var(--muted);">OCEAN 요인 상세</h3>
+      <div class="ocean-bars" id="oceanBars"></div>
+    </div>
+
+    <!-- 그림자 강도 카드 -->
+    <div id="shadowCard"></div>
+
+    <!-- 쉐도우그램 유형 설명 -->
+    <div class="type-detail-card" id="typeDetail"></div>
+
+    <!-- 차원 분석 -->
+    <div class="card" id="dimAnalysis"></div>
+
+    <hr class="divider">
+
+    <!-- 액션 버튼 -->
+    <div class="result-actions">
+      <button class="btn" onclick="goToFullReport()">📄 쉐도우그램 전체 보고서</button>
+      <button class="btn-outline" onclick="restartQuiz()">🔄 다시 검사하기</button>
+    </div>
+    <p style="font-size:11px; color:var(--muted); margin-top:10px; text-align:center;">
+      Big5 결과는 쉐도우그램 개인 보고서에서 더 깊이 탐색할 수 있어요.
+    </p>
+
+  </div>
+</section>
+
+<script>
+// ═══════════════════════════════════════════
+// IPIP Big5 50문항 (한국어)
+// 5요인 × 10문항, 역채점 표시: R
+// dim: O=개방성, C=성실성, E=외향성, A=친화성, N=신경증
+// ═══════════════════════════════════════════
+const B5Q = [
+  // ── 외향성 (Extraversion) ──
+  { dim:'E', r:false, text:"사람들과 함께 있을 때 생기가 넘친다." },
+  { dim:'E', r:false, text:"모임에서 대화를 주도하는 편이다." },
+  { dim:'E', r:false, text:"처음 보는 사람에게도 먼저 말을 건다." },
+  { dim:'E', r:true,  text:"군중 속에서도 혼자인 느낌이 든다." },
+  { dim:'E', r:false, text:"여럿이 함께하는 활동을 즐긴다." },
+  { dim:'E', r:true,  text:"사람이 많은 곳에 있으면 피곤하다." },
+  { dim:'E', r:false, text:"사람들에게 주목받는 것이 좋다." },
+  { dim:'E', r:true,  text:"낯선 사람과 이야기하는 것이 불편하다." },
+  { dim:'E', r:false, text:"파티나 사교 모임을 즐긴다." },
+  { dim:'E', r:true,  text:"조용히 배경에 머무는 것이 편하다." },
+
+  // ── 친화성 (Agreeableness) ──
+  { dim:'A', r:false, text:"타인의 감정에 관심이 많고 공감을 잘 한다." },
+  { dim:'A', r:false, text:"다른 사람을 도울 기회를 찾는다." },
+  { dim:'A', r:true,  text:"사람들이 말하는 것에 별 관심이 없다." },
+  { dim:'A', r:false, text:"다른 사람의 관점에서 생각해보려 한다." },
+  { dim:'A', r:false, text:"갈등보다 협력을 선호한다." },
+  { dim:'A', r:true,  text:"사람들을 조종하는 것이 때로 필요하다고 느낀다." },
+  { dim:'A', r:false, text:"다른 사람의 행복이 나에게도 중요하다." },
+  { dim:'A', r:true,  text:"어떤 대가를 치르더라도 이기는 것이 좋다." },
+  { dim:'A', r:false, text:"사람들에 대한 믿음이 있다." },
+  { dim:'A', r:true,  text:"복수하는 것이 용서하는 것보다 낫다고 생각한다." },
+
+  // ── 성실성 (Conscientiousness) ──
+  { dim:'C', r:false, text:"항상 준비를 철저히 한다." },
+  { dim:'C', r:true,  text:"내 물건들을 어지럽히는 경향이 있다." },
+  { dim:'C', r:false, text:"세부 사항에 주의를 기울인다." },
+  { dim:'C', r:true,  text:"약속이나 의무를 자주 잊어버린다." },
+  { dim:'C', r:false, text:"시간표나 일정을 잘 지킨다." },
+  { dim:'C', r:true,  text:"일을 하기 전에 오래 미루는 편이다." },
+  { dim:'C', r:false, text:"맡은 일을 끝까지 해낸다." },
+  { dim:'C', r:false, text:"정확하고 체계적으로 일한다." },
+  { dim:'C', r:true,  text:"규칙이나 규정을 잘 어기는 편이다." },
+  { dim:'C', r:false, text:"높은 목표를 세우고 이를 달성하기 위해 노력한다." },
+
+  // ── 신경증 (Neuroticism) ──
+  { dim:'N', r:false, text:"기분이 쉽게 변한다." },
+  { dim:'N', r:true,  text:"대부분의 상황에서 마음이 편안하다." },
+  { dim:'N', r:false, text:"자주 우울하거나 울적한 기분을 느낀다." },
+  { dim:'N', r:true,  text:"스트레스에 잘 대처하는 편이다." },
+  { dim:'N', r:false, text:"사소한 일에도 짜증을 낸다." },
+  { dim:'N', r:false, text:"미래에 대해 자주 걱정한다." },
+  { dim:'N', r:true,  text:"감정적으로 안정되어 있다고 느낀다." },
+  { dim:'N', r:false, text:"다른 사람들이 나를 어떻게 생각할지 자주 신경 쓴다." },
+  { dim:'N', r:false, text:"별것 아닌 일에도 불안을 느낀다." },
+  { dim:'N', r:false, text:"기분이 쉽게 상하는 편이다." },
+
+  // ── 개방성 (Openness) ──
+  { dim:'O', r:false, text:"새로운 아이디어에 매력을 느낀다." },
+  { dim:'O', r:true,  text:"상상력이 풍부하지 않다고 생각한다." },
+  { dim:'O', r:false, text:"철학적인 토론을 즐긴다." },
+  { dim:'O', r:true,  text:"추상적인 개념이 흥미롭지 않다." },
+  { dim:'O', r:false, text:"예술, 음악, 문학에 강한 관심이 있다." },
+  { dim:'O', r:false, text:"창의적인 편이다." },
+  { dim:'O', r:true,  text:"상상하고 공상하는 것을 즐기지 않는다." },
+  { dim:'O', r:false, text:"다양한 문화와 생활 방식이 흥미롭다." },
+  { dim:'O', r:false, text:"복잡한 문제를 해결하는 것을 좋아한다." },
+  { dim:'O', r:true,  text:"새롭고 낯선 것보다 익숙한 것이 훨씬 편하다." },
+];
+
+const DIM_LABELS = { O:'개방성', C:'성실성', E:'외향성', A:'친화성', N:'신경증' };
+const DIM_COLORS = {
+  O: { r:167, g:243, b:208 },
+  C: { r:196, g:181, b:253 },
+  E: { r:251, g:191, b:36  },
+  A: { r:249, g:168, b:212 },
+  N: { r:239, g:68,  b:68  },
+};
+
+// ── 그림자 강도 데이터 ──
+const SHADOW_DATA = {
+  low: {
+    level: 'low',
+    label: '안정된 그림자',
+    badge: '🌱',
+    pct: null, // 계산됨
+    comfort: `당신의 내면은 지금 비교적 평온한 상태예요. 감정의 파도가 잔잔하고, 스트레스에 꽤 유연하게 반응하고 있어요. 이 안정감은 단단한 성장의 토대가 됩니다. 지금 이 균형을 소중히 여기세요.`,
+    tips: [
+      '현재의 안정 루틴을 의식적으로 기록해두세요. 흔들릴 때 돌아올 기준점이 됩니다.',
+      '감정 일기를 가볍게 써보세요. 지금처럼 고요할 때가 패턴을 발견하기 가장 좋은 시점입니다.',
+      '가까운 사람과 취약한 면을 조금씩 나눠보세요. 안정감은 진정한 연결로 더 깊어집니다.',
+    ]
+  },
+  mid: {
+    level: 'mid',
+    label: '일렁이는 그림자',
+    badge: '🌊',
+    pct: null,
+    comfort: `때로는 감정의 파도에 휩쓸리는 것 같은 느낌이 드시나요? 그건 당신이 예민하고 섬세한 사람이라는 뜻이에요. 이 감수성은 약점이 아니라, 타인과 깊이 연결될 수 있는 선물이기도 해요. 지금의 그림자를 외면하지 말고, 천천히 들여다봐 주세요.`,
+    tips: [
+      '하루 5분, 감정 체크인을 해보세요. "지금 나는 어떤 감정인가?"를 이름 붙이는 것만으로도 조절력이 생깁니다.',
+      '호흡 루틴(4-7-8 호흡법 등)을 습관화해보세요. 불안이 올라올 때 몸부터 안정시키는 것이 효과적입니다.',
+      '비판적인 내면의 목소리를 알아채세요. "또 실패했어" 대신 "이번엔 힘들었구나"로 바꿔보세요.',
+      '지지적인 관계 한 곳을 확보하세요. 털어놓을 수 있는 공간은 그 자체가 치유입니다.',
+    ]
+  },
+  high: {
+    level: 'high',
+    label: '짙은 그림자',
+    badge: '🌑',
+    pct: null,
+    comfort: `지금 많이 지쳐있거나, 감정적으로 힘든 시간을 보내고 있을 수 있어요. 그 무게를 혼자 감당하느라 얼마나 애쓰셨는지... 그 고통은 진짜예요. 그리고 그 고통은 당신이 더 깊이 느끼고, 더 진지하게 살아가는 사람임을 보여줘요. 지금은 자신을 가장 먼저 돌봐주세요.`,
+    tips: [
+      '전문가의 도움을 받는 것을 고려해보세요. 심리상담은 약함이 아니라 용기 있는 선택입니다.',
+      '작은 것 하나만 통제해보세요. 청소, 산책, 물 한 잔. 작은 행동이 자기 효능감을 회복시킵니다.',
+      '완벽하지 않아도 된다는 허락을 스스로에게 주세요. 지금 이대로도 충분합니다.',
+      '수면, 식사, 햇빛 — 기본적인 신체 관리가 감정 안정의 가장 빠른 지름길이에요.',
+      '당신 곁에 있어줄 사람에게 연락해보세요. 고립은 그림자를 더 짙게 만듭니다.',
+    ]
+  }
+};
+
+// ── Big5 → 쉐도우그램 유형 매핑 ──
+// E>50 → E (외향), E≤50 → I (내향)
+// O>50 → N (직관), O≤50 → S (감각)
+// A>50 → F (감정), A≤50 → T (사고)
+// C>50 → J (판단), C≤50 → P (인식)
+function oceanToSgType(scores) {
+  const d1 = scores.E > 50 ? 'E' : 'I';
+  const d2 = scores.O > 50 ? 'N' : 'S';
+  const d3 = scores.A > 50 ? 'F' : 'T';
+  const d4 = scores.C > 50 ? 'J' : 'P';
+  return { d1, d2, d3, d4, code: d1+d2+d3+d4 };
+}
+
+// ── 점수 계산 (0~100 정규화) ──
+function calcScores(answers) {
+  const raw = { O:0, C:0, E:0, A:0, N:0 };
+  const cnt = { O:0, C:0, E:0, A:0, N:0 };
+  B5Q.forEach((q, i) => {
+    const v = answers[i];
+    if (v == null) return;
+    const scored = q.r ? (6 - v) : v;  // 역채점
+    raw[q.dim] += scored;
+    cnt[q.dim]++;
+  });
+  const scores = {};
+  ['O','C','E','A','N'].forEach(d => {
+    const max = cnt[d] * 5;
+    const min = cnt[d] * 1;
+    scores[d] = Math.round(((raw[d] - min) / (max - min)) * 100);
+  });
+  return scores;
+}
+
+// ── 상태 ──
+let currentQ = 0;
+let answers = new Array(50).fill(null);
+let userName = '';
+let usedCode = '';
+let finalScores = null;
+
+// ── 섹션 전환 ──
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ── 코드 확인 ──
+function checkCode() {
+  const code = document.getElementById('codeInput').value.trim().toUpperCase();
+  const err = document.getElementById('codeError');
+  if (!code) { err.textContent = '코드를 입력해주세요.'; return; }
+  const result = validateCode(code);
+  if (!result.valid) { err.textContent = result.message || '유효하지 않은 코드입니다.'; return; }
+  if (result.code.type !== 'I') { err.textContent = '개인검사 코드(SGI-)가 아닙니다.'; return; }
+  usedCode = code;
+  err.textContent = '';
+  showSection('nameSection');
+}
+
+function startBeta() {
+  const code = issueCode('I', 'Big5-Beta');
+  markCodeUsed(code.code);
+  usedCode = code.code;
+  showSection('nameSection');
+}
+
+// ── 이름 입력 → 검사 시작 ──
+function startQuiz() {
+  const name = document.getElementById('nameInput').value.trim();
+  const err = document.getElementById('nameError');
+  if (!name) { err.textContent = '이름을 입력해주세요.'; return; }
+  userName = name;
+  err.textContent = '';
+  answers = new Array(50).fill(null);
+  currentQ = 0;
+  renderQ();
+  showSection('quizSection');
+}
+
+// ── 문항 렌더링 ──
+const DIM_ORDER_LABELS = { E:'외향성 (E)', A:'친화성 (A)', C:'성실성 (C)', N:'신경증 (N)', O:'개방성 (O)' };
+
+function renderQ() {
+  const q = B5Q[currentQ];
+  const total = B5Q.length;
+  const pct = Math.round((currentQ / total) * 100);
+
+  document.getElementById('progLabel').textContent = `${currentQ + 1} / ${total}`;
+  document.getElementById('progPct').textContent = `${pct}%`;
+  document.getElementById('progFill').style.width = pct + '%';
+  document.getElementById('qCounter').textContent = `${currentQ + 1} / ${total}`;
+  document.getElementById('qDimLabel').textContent = DIM_ORDER_LABELS[q.dim] || q.dim;
+  document.getElementById('qText').textContent = q.text;
+
+  const btns = document.querySelectorAll('.likert-btn');
+  btns.forEach(btn => {
+    btn.classList.remove('selected');
+    if (answers[currentQ] != null && parseInt(btn.dataset.v) === answers[currentQ]) {
+      btn.classList.add('selected');
+    }
+  });
+
+  const nextBtn = document.getElementById('nextBtn');
+  nextBtn.disabled = (answers[currentQ] == null);
+  nextBtn.textContent = currentQ === total - 1 ? '완료 ✓' : '다음 →';
+
+  const prevBtn = document.getElementById('prevBtn');
+  prevBtn.style.visibility = currentQ > 0 ? 'visible' : 'hidden';
+}
+
+function selectAnswer(v) {
+  answers[currentQ] = v;
+  document.querySelectorAll('.likert-btn').forEach(btn => {
+    btn.classList.toggle('selected', parseInt(btn.dataset.v) === v);
+  });
+  document.getElementById('nextBtn').disabled = false;
+}
+
+function nextQ() {
+  if (answers[currentQ] == null) return;
+  if (currentQ === B5Q.length - 1) {
+    calcResult();
+    return;
+  }
+  currentQ++;
+  renderQ();
+}
+
+function prevQ() {
+  if (currentQ > 0) { currentQ--; renderQ(); }
+}
+
+// ── 결과 계산 ──
+function calcResult() {
+  showSection('loadingSection');
+  setTimeout(() => {
+    finalScores = calcScores(answers);
+    renderResult(finalScores);
+    showSection('resultSection');
+  }, 1200);
+}
+
+// ── 결과 렌더링 ──
+function renderResult(scores) {
+  const sgMap = oceanToSgType(scores);
+  const sgCode = sgMap.code;
+  const typeData = typeof TYPES !== 'undefined' ? TYPES[sgCode] : null;
+
+  // 헤더
+  document.getElementById('resTypeBadge').textContent = sgCode;
+  document.getElementById('resName').textContent = userName + '님의 쉐도우그램 유형';
+  if (typeData) {
+    document.getElementById('resTypeName').textContent = typeData.name || sgCode;
+    document.getElementById('resTypeEmoji').textContent = typeData.emoji || '🌑';
+  } else {
+    document.getElementById('resTypeName').textContent = sgCode;
+    document.getElementById('resTypeEmoji').textContent = '🌑';
+  }
+
+  // 차트 렌더링 (약간 딜레이)
+  setTimeout(() => {
+    renderRadar(scores);
+    renderBar(scores);
+  }, 100);
+
+  // OCEAN 상세 바
+  renderOceanBars(scores);
+
+  // 그림자 강도 카드
+  renderShadowCard(scores.N);
+
+  // 유형 상세
+  renderTypeDetail(sgCode, sgMap, typeData);
+
+  // 차원 분석
+  renderDimAnalysis(sgMap, scores);
+}
+
+// ── 레이더 차트 ──
+let radarChartInst = null;
+function renderRadar(scores) {
+  if (radarChartInst) { radarChartInst.destroy(); radarChartInst = null; }
+  const ctx = document.getElementById('radarChart').getContext('2d');
+  const dims = ['O','C','E','A','N'];
+  radarChartInst = new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels: dims.map(d => DIM_LABELS[d]),
+      datasets: [{
+        label: userName,
+        data: dims.map(d => scores[d]),
+        backgroundColor: 'rgba(124,58,237,0.2)',
+        borderColor: 'rgba(168,85,247,0.8)',
+        pointBackgroundColor: dims.map(d => `rgba(${DIM_COLORS[d].r},${DIM_COLORS[d].g},${DIM_COLORS[d].b},1)`),
+        pointRadius: 5,
+        borderWidth: 2,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        r: {
+          min: 0, max: 100,
+          ticks: { display: false, stepSize: 25 },
+          grid: { color: 'rgba(255,255,255,0.08)' },
+          pointLabels: { color: '#94a3b8', font: { size: 11 } },
+          angleLines: { color: 'rgba(255,255,255,0.06)' },
+        }
+      },
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+
+// ── 바 차트 (수평) ──
+let barChartInst = null;
+function renderBar(scores) {
+  if (barChartInst) { barChartInst.destroy(); barChartInst = null; }
+  const ctx = document.getElementById('barChart').getContext('2d');
+  const dims = ['E','O','A','C','N'];
+  barChartInst = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: dims.map(d => DIM_LABELS[d]),
+      datasets: [{
+        data: dims.map(d => scores[d]),
+        backgroundColor: dims.map(d => `rgba(${DIM_COLORS[d].r},${DIM_COLORS[d].g},${DIM_COLORS[d].b},0.7)`),
+        borderColor: dims.map(d => `rgba(${DIM_COLORS[d].r},${DIM_COLORS[d].g},${DIM_COLORS[d].b},1)`),
+        borderWidth: 1.5,
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: {
+          min: 0, max: 100,
+          grid: { color: 'rgba(255,255,255,0.05)' },
+          ticks: { color: '#94a3b8', font: { size: 10 } },
+        },
+        y: { grid: { display: false }, ticks: { color: '#e2e8f0', font: { size: 11, weight: '600' } } }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` ${ctx.raw}점`
+          }
+        }
+      }
+    }
+  });
+}
+
+// ── OCEAN 상세 바 ──
+const OCEAN_BAR_COLORS = {
+  O: 'linear-gradient(90deg,#6ee7b7,#a7f3d0)',
+  C: 'linear-gradient(90deg,#a78bfa,#c4b5fd)',
+  E: 'linear-gradient(90deg,#fbbf24,#fde68a)',
+  A: 'linear-gradient(90deg,#f9a8d4,#fce7f3)',
+  N: 'linear-gradient(90deg,#f87171,#fca5a5)',
+};
+const OCEAN_DESC = {
+  O: { high:'새로운 아이디어와 가능성에 열려 있는 탐구자', low:'현실적이고 안정적인 것을 선호하는 실용주의자' },
+  C: { high:'계획적이고 꼼꼼하게 목표를 달성하는 실행가', low:'유연하고 즉흥적으로 흐름에 맞게 움직이는 자유인' },
+  E: { high:'사람과의 교류에서 에너지를 얻는 사교가', low:'혼자만의 깊은 시간에서 재충전하는 내향인' },
+  A: { high:'공감과 배려로 관계를 이어가는 조화주의자', low:'논리와 원칙으로 세상을 바라보는 직관적 비평가' },
+  N: { high:'감정의 파동이 크고 예민하게 반응하는 감수성', low:'감정적으로 안정적이고 스트레스에 강한 성격' },
+};
+
+function renderOceanBars(scores) {
+  const container = document.getElementById('oceanBars');
+  container.innerHTML = '';
+  ['O','C','E','A','N'].forEach(d => {
+    const pct = scores[d];
+    const desc = pct > 50 ? OCEAN_DESC[d].high : OCEAN_DESC[d].low;
+    container.innerHTML += `
+      <div class="ocean-item">
+        <div class="ocean-header">
+          <div class="ocean-label">${DIM_LABELS[d]}<span>${desc}</span></div>
+          <div class="ocean-score">${pct}점</div>
+        </div>
+        <div class="ocean-bar-track">
+          <div class="ocean-bar-fill" style="width:0%; background:${OCEAN_BAR_COLORS[d]}" data-w="${pct}"></div>
+        </div>
+      </div>`;
+  });
+  // 애니메이션
+  setTimeout(() => {
+    container.querySelectorAll('.ocean-bar-fill').forEach(el => {
+      el.style.width = el.dataset.w + '%';
+    });
+  }, 200);
+}
+
+// ── 그림자 강도 카드 ──
+function renderShadowCard(nScore) {
+  let level;
+  if (nScore < 35) level = 'low';
+  else if (nScore < 65) level = 'mid';
+  else level = 'high';
+
+  const d = { ...SHADOW_DATA[level], pct: nScore };
+  const container = document.getElementById('shadowCard');
+
+  const tipsHtml = d.tips.map(t => `<li>${t}</li>`).join('');
+  container.innerHTML = `
+    <div class="shadow-card ${level}">
+      <div class="shadow-header">
+        <div class="shadow-badge">${d.badge}</div>
+        <div>
+          <div class="shadow-title">그림자 강도 · ${d.label}</div>
+          <div class="shadow-subtitle">신경증(N) 점수 기반 · Big5 그림자 지표</div>
+        </div>
+      </div>
+      <div class="shadow-meter">
+        <div class="shadow-meter-bar">
+          <div class="shadow-meter-fill ${level}" style="width:0%" data-w="${nScore}"></div>
+        </div>
+        <div class="shadow-meter-pct">${nScore}점</div>
+      </div>
+      <div class="shadow-section-title">✦ 위로의 말</div>
+      <div class="shadow-message">"${d.comfort}"</div>
+      <div class="shadow-section-title" style="margin-top:18px;">✦ 그림자 통합 방향</div>
+      <ul class="shadow-tips">${tipsHtml}</ul>
+    </div>`;
+
+  setTimeout(() => {
+    container.querySelector('.shadow-meter-fill').style.width = nScore + '%';
+  }, 300);
+}
+
+// ── 유형 상세 카드 ──
+function renderTypeDetail(sgCode, sgMap, typeData) {
+  const el = document.getElementById('typeDetail');
+  if (!typeData) {
+    el.innerHTML = `<div class="tag">쉐도우그램 유형</div><h2>${sgCode}</h2><p>Big5 검사 결과에서 도출된 유형입니다.</p>`;
+    return;
+  }
+  const light = typeData.light ? `<p style="margin-top:10px;"><strong style="color:#fbbf24;">✨ 빛:</strong> ${typeData.light}</p>` : '';
+  const shadow = typeData.shadow ? `<p style="margin-top:6px;"><strong style="color:#f87171;">🌑 그림자:</strong> ${typeData.shadow}</p>` : '';
+  el.innerHTML = `
+    <div class="tag">쉐도우그램 유형 · Big5 매핑</div>
+    <div class="emoji">${typeData.emoji || '🌑'}</div>
+    <h2>${sgCode} · ${typeData.name || ''}</h2>
+    <p style="margin-top:8px; font-size:15px; color:var(--text);">${typeData.desc || ''}</p>
+    ${light}${shadow}`;
+}
+
+// ── 차원 분석 ──
+const DIM_EXPLAIN = {
+  E: '외향적 에너지 — 사람과의 상호작용에서 에너지를 얻고, 활발하게 표현합니다.',
+  I: '내향적 에너지 — 혼자만의 공간에서 재충전하며, 깊은 집중력을 발휘합니다.',
+  N: '직관적 인식 — 패턴과 가능성을 탐색하며, 미래 지향적으로 사고합니다.',
+  S: '감각적 인식 — 현재의 구체적 사실과 경험을 신뢰하며, 실용적으로 접근합니다.',
+  F: '감정적 판단 — 사람과의 관계와 가치를 중심으로 결정합니다.',
+  T: '사고적 판단 — 논리와 원칙으로 분석하며 객관적으로 결정합니다.',
+  J: '판단적 생활 — 계획과 구조를 선호하며, 완결감을 중요시합니다.',
+  P: '인식적 생활 — 유연하고 개방적으로 흐름에 따라 움직입니다.',
+};
+
+function renderDimAnalysis(sgMap, scores) {
+  const el = document.getElementById('dimAnalysis');
+  const dims = [
+    { key: sgMap.d1, pair: ['E','I'], score: scores.E, label: '외향성', base:'E' },
+    { key: sgMap.d2, pair: ['N','S'], score: scores.O, label: '개방성', base:'O' },
+    { key: sgMap.d3, pair: ['F','T'], score: scores.A, label: '친화성', base:'A' },
+    { key: sgMap.d4, pair: ['J','P'], score: scores.C, label: '성실성', base:'C' },
+  ];
+
+  let html = `<h3 style="font-size:14px; margin-bottom:16px; color:var(--muted); text-transform:uppercase; letter-spacing:1px;">차원별 분석</h3>`;
+  dims.forEach(d => {
+    const tagClass = `dim-${d.key === 'N' ? 'N-type' : d.key}`;
+    html += `
+      <div style="margin-bottom:14px;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+          <span class="dim-tag ${tagClass}">${d.key}</span>
+          <span style="font-size:13px; font-weight:600;">${DIM_EXPLAIN[d.key].split(' — ')[0]}</span>
+        </div>
+        <p style="font-size:13px; color:var(--muted); line-height:1.65; padding-left:4px;">${DIM_EXPLAIN[d.key].split(' — ')[1]}</p>
+        <div style="font-size:11px; color:var(--muted); margin-top:4px; padding-left:4px;">Big5 기반: ${d.label} ${d.score}점</div>
+      </div>`;
+  });
+  el.innerHTML = html;
+}
+
+// ── 전체 보고서로 이동 ──
+function goToFullReport() {
+  if (!finalScores) return;
+  const sgMap = oceanToSgType(finalScores);
+  const params = new URLSearchParams({
+    type: sgMap.code,
+    name: userName,
+    paid: '1',
+    from: 'big5',
+    nScore: finalScores.N
+  });
+  window.location.href = 'report.html?' + params.toString();
+}
+
+function restartQuiz() {
+  answers = new Array(50).fill(null);
+  currentQ = 0;
+  finalScores = null;
+  showSection('codeSection');
+}
+</script>
+</body>
+</html>
