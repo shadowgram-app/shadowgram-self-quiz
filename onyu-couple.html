@@ -301,10 +301,84 @@ nav {
 }
 .btn-pdf:hover { opacity: .9; }
 
+/* ── 업셀 화면 ── */
+#upsell-screen {
+  display: none; max-width: 520px; margin: 0 auto; padding: 48px 20px 80px; text-align: center;
+}
+.upsell-lock-icon { font-size: 52px; margin-bottom: 16px; }
+.upsell-title {
+  font-family: 'Noto Serif KR', serif; font-size: clamp(22px, 5vw, 30px);
+  font-weight: 700; line-height: 1.4; margin-bottom: 10px;
+}
+.upsell-title em { color: var(--gold); font-style: italic; }
+.upsell-sub {
+  font-size: 14px; color: var(--silver); line-height: 1.8; margin-bottom: 28px;
+}
+.upsell-preview {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 18px 20px; margin-bottom: 28px; text-align: left;
+}
+.upsell-preview-title {
+  font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: var(--silver);
+  margin-bottom: 12px;
+}
+.upsell-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 13px; color: var(--silver); line-height: 1.7; padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+}
+.upsell-item:last-child { border-bottom: none; }
+.upsell-item-icon { flex-shrink: 0; color: var(--gold); }
+
+.upsell-divider {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 11px; color: var(--silver); margin: 24px 0;
+}
+.upsell-divider::before, .upsell-divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+
+/* 결제 버튼 */
+.btn-pay {
+  display: block; width: 100%;
+  background: linear-gradient(135deg, var(--gold), var(--goldL));
+  border: none; border-radius: 14px; color: #000;
+  font-family: 'Noto Sans KR', sans-serif; font-size: 16px; font-weight: 900;
+  padding: 17px; cursor: pointer; transition: opacity .2s;
+  letter-spacing: 0.03em; text-decoration: none; line-height: 1;
+  margin-bottom: 10px;
+}
+.btn-pay:hover { opacity: .9; }
+.btn-pay-note { font-size: 11px; color: var(--silver); margin-bottom: 24px; }
+
+/* 코드 입력 */
+.code-input-wrap {
+  display: flex; gap: 8px;
+}
+.code-input {
+  flex: 1; background: var(--bg2);
+  border: 1px solid var(--border); border-radius: 10px;
+  color: var(--text); font-family: 'Noto Sans KR', sans-serif;
+  font-size: 15px; padding: 13px 16px; outline: none;
+  transition: border-color .2s; letter-spacing: 0.15em; text-transform: uppercase;
+}
+.code-input:focus { border-color: var(--gold); }
+.code-input::placeholder { letter-spacing: 0.05em; text-transform: none; color: var(--silver); }
+.btn-code-submit {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text);
+  font-family: 'Noto Sans KR', sans-serif; font-size: 14px; font-weight: 700;
+  padding: 13px 18px; cursor: pointer; transition: .2s; white-space: nowrap;
+}
+.btn-code-submit:hover { border-color: var(--gold); color: var(--gold); }
+.code-error {
+  font-size: 12px; color: var(--red); margin-top: 8px; min-height: 18px; text-align: left;
+}
+
 /* ── PDF 인쇄 모드 ── */
 @media print {
   body { background: #fff !important; color: #111 !important; }
-  nav, .quiz-nav, .btn-pdf, #quiz-screen, #start-screen { display: none !important; }
+  nav, .quiz-nav, .btn-pdf, #quiz-screen, #start-screen, #upsell-screen { display: none !important; }
   #result-screen { display: block !important; padding: 0 !important; }
   .result-cover, .content-block, .butterfly-card, .type-card, .compat-card {
     background: #fff !important; border-color: #ddd !important; color: #111 !important;
@@ -380,7 +454,39 @@ nav {
   </div>
 </div>
 
-<!-- ③ 결과 화면 -->
+<!-- ③ 업셀 화면 -->
+<div id="upsell-screen">
+  <div class="upsell-lock-icon">🔒</div>
+  <h2 class="upsell-title">상세 리포트를<br/><em>확인해보세요</em></h2>
+  <p class="upsell-sub">기본 결과를 확인하셨나요?<br/>상세 리포트에는 더 깊은 내용이 담겨 있어요.</p>
+
+  <div class="upsell-preview">
+    <div class="upsell-preview-title">📋 상세 리포트 포함 내용</div>
+    <div class="upsell-item"><span class="upsell-item-icon">✦</span><span>각자의 소통 스타일 강점 & 성장 영역 상세 분석</span></div>
+    <div class="upsell-item"><span class="upsell-item-icon">✦</span><span>두 사람 맞춤 소통 가이드 (각자에게 드리는 조언)</span></div>
+    <div class="upsell-item"><span class="upsell-item-icon">✦</span><span>부부 대화 워크북 질문 4가지</span></div>
+    <div class="upsell-item"><span class="upsell-item-icon">✦</span><span>인쇄용 PDF 저장</span></div>
+  </div>
+
+  <!-- 결제 버튼 -->
+  <a class="btn-pay" id="btn-pay" href="https://pay.example.com/onyu-couple" target="_blank" rel="noopener">
+    💳 결제하고 상세 리포트 보기
+  </a>
+  <p class="btn-pay-note">결제 후 발급된 코드를 아래에 입력하세요</p>
+
+  <div class="upsell-divider">또는 이미 코드가 있다면</div>
+
+  <!-- 코드 입력 -->
+  <div class="code-input-wrap">
+    <input class="code-input" id="report-code" placeholder="코드를 입력하세요" maxlength="20"
+      oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9\-]/g,'')"
+      onkeypress="if(event.key==='Enter')submitCode()"/>
+    <button class="btn-code-submit" onclick="submitCode()">확인</button>
+  </div>
+  <div class="code-error" id="code-error"></div>
+</div>
+
+<!-- ④ 결과 화면 -->
 <div id="result-screen"></div>
 
 <script src="sg-data.js"></script>
@@ -389,6 +495,37 @@ nav {
 // 온유스쿨 · 부부클래스 소통스타일 리포트
 // 42world와 동일 구조, 문항만 부부 맥락으로 교체
 // ══════════════════════════════════════════════
+
+// ── 유료 코드 목록 (여기에 발급된 코드 추가) ──
+const VALID_CODES = [
+  'ONYU-2024',
+  'BUBU-0001',
+  'ONYU-TEST',
+  // 추가 코드를 이 목록에 넣으세요
+];
+
+// 결제 페이지 URL (래피드 등 실제 URL로 교체하세요)
+const PAY_URL = 'https://pay.example.com/onyu-couple';
+
+// 유료 잠금 해제 여부
+let premiumUnlocked = false;
+
+// 검사 결과 임시 저장
+let savedTypeA, savedTypeB, savedAxA, savedAxB;
+
+function submitCode() {
+  const val = document.getElementById('report-code').value.trim().toUpperCase();
+  const err = document.getElementById('code-error');
+  if (!val) { err.textContent = '코드를 입력해주세요.'; return; }
+  if (VALID_CODES.includes(val)) {
+    premiumUnlocked = true;
+    err.textContent = '';
+    showFullResult();
+  } else {
+    err.textContent = '유효하지 않은 코드입니다. 다시 확인해주세요.';
+    document.getElementById('report-code').focus();
+  }
+}
 
 // ── 유형 데이터 (온유스쿨 언어로) ──
 const OY_TYPES = {
@@ -813,7 +950,164 @@ function calcResult() {
   const typeA = Object.entries(scA).sort((a,b) => b[1]-a[1])[0][0];
   const typeB = Object.entries(scB).sort((a,b) => b[1]-a[1])[0][0];
 
-  renderResult(typeA, typeB, axA, axB);
+  // 결과 임시 저장 (업셀 후 상세 렌더에 재사용)
+  savedTypeA = typeA; savedTypeB = typeB;
+  savedAxA = axA; savedAxB = axB;
+
+  if (premiumUnlocked) {
+    renderResult(typeA, typeB, axA, axB);
+  } else {
+    showBasicResult(typeA, typeB, axA, axB);
+  }
+}
+
+// ── 기본 결과 (무료) ──
+function showBasicResult(typeA, typeB, axA, axB) {
+  document.getElementById('quiz-screen').style.display = 'none';
+  const screen = document.getElementById('result-screen');
+  screen.style.display = 'block';
+  document.getElementById('btn-pdf').style.display = 'none';
+
+  const tA = OY_TYPES[typeA], tB = OY_TYPES[typeB];
+  const compat = OY_COMPAT._get(typeA, typeB);
+  const today = new Date().toLocaleDateString('ko-KR', { year:'numeric', month:'long', day:'numeric' });
+
+  const DIMS = [
+    { label: '에너지 방향', left: 'I · 내향', right: 'E · 외향', axIdx: [2, 7] },
+    { label: '인식 방식',   left: 'S · 구체', right: 'N · 직관', axIdx: [0, 3] },
+    { label: '판단 방식',   left: 'T · 논리', right: 'F · 관계', axIdx: [4, 5] },
+    { label: '생활 방식',   left: 'J · 계획', right: 'P · 유연', axIdx: [6, 1] },
+  ];
+
+  const butterflyRows = DIMS.map(dim => {
+    const lA = axA[dim.axIdx[0]], lB = axB[dim.axIdx[0]];
+    const diff = Math.abs(lA - lB);
+    const diffClass = diff < 20 ? 'bf-diff-low' : diff < 40 ? 'bf-diff-mid' : 'bf-diff-high';
+    const diffText = diff < 20 ? '✓ 유사' : diff < 40 ? '약간 다름' : '뚜렷한 차이';
+    const wA = Math.abs(lA - 50), wB = Math.abs(lB - 50);
+    const dirA = lA >= 50 ? 'right' : 'left', dirB = lB >= 50 ? 'right' : 'left';
+    const styleA = dirA === 'right' ? `right:50%; width:${wA}%;` : `left:50%; width:${wA}%;`;
+    const styleB = dirB === 'right' ? `right:50%; width:${wB}%;` : `left:50%; width:${wB}%;`;
+    return `
+      <div class="bf-row">
+        <div class="bf-dim-label">${dim.label}</div>
+        <div class="bf-poles"><span>${dim.left}</span><span>${dim.right}</span></div>
+        <div class="bf-bar-wrap">
+          <div class="bf-bar-a" style="${styleA}"></div>
+          <div class="bf-bar-b" style="${styleB}"></div>
+        </div>
+        <div class="bf-legend">
+          <span class="bf-legend-a">${nameA}: ${lA>=50?dim.left:dim.right} ${Math.round(wA*2)}%</span>
+          <span class="bf-diff-badge ${diffClass}">${diffText}</span>
+          <span class="bf-legend-b">${nameB}: ${lB>=50?dim.left:dim.right} ${Math.round(wB*2)}%</span>
+        </div>
+      </div>`;
+  }).join('');
+
+  screen.innerHTML = `
+    <!-- 커버 -->
+    <div class="result-cover">
+      <p class="result-kicker">온유스쿨 · 부부클래스 · 소통스타일 리포트</p>
+      <div class="result-couple-row">
+        <div class="result-person">
+          <div class="result-type-icon">${tA.icon}</div>
+          <div class="result-type-code" style="color:var(--A)">${typeA}</div>
+          <div style="font-size:12px;color:var(--A);margin-top:2px;">${tA.label}</div>
+          <div class="result-person-name">${nameA}</div>
+        </div>
+        <div class="result-heart">🤝</div>
+        <div class="result-person">
+          <div class="result-type-icon">${tB.icon}</div>
+          <div class="result-type-code" style="color:var(--B)">${typeB}</div>
+          <div style="font-size:12px;color:var(--B);margin-top:2px;">${tB.label}</div>
+          <div class="result-person-name">${nameB}</div>
+        </div>
+      </div>
+      <div class="result-date">${today} · 온유스쿨 부부클래스</div>
+    </div>
+
+    <!-- SECTION 01: 소통 연결 지수 -->
+    <div class="result-section">
+      <p class="sec-num">SECTION 01</p>
+      <h2 class="sec-title">두 사람의 <em>소통 연결 지수</em></h2>
+      <div class="compat-card">
+        <div class="compat-score">${compat.score}</div>
+        <div class="compat-label">소통 연결 지수</div>
+        <div class="compat-title">${compat.title}</div>
+        <div class="compat-desc">${compat.desc}</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- SECTION 02: 소통 강점 -->
+    <div class="result-section">
+      <p class="sec-num">SECTION 02</p>
+      <h2 class="sec-title">두 사람이 <em>함께 빛나는 것</em></h2>
+      <div class="content-block">
+        <div class="block-header" style="color:var(--green)">✦ 함께일 때 강점</div>
+        <div class="block-body">${compat.strength}</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- SECTION 03: 성장 영역 -->
+    <div class="result-section">
+      <p class="sec-num">SECTION 03</p>
+      <h2 class="sec-title">함께 성장할 <em>영역</em></h2>
+      <div class="content-block" style="border-color:rgba(224,80,64,.2)">
+        <div class="block-header" style="color:var(--red)">◈ 소통의 어려움</div>
+        <div class="block-body" style="color:var(--silver)">${compat.challenge}</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- SECTION 04: 4차원 나비 차트 -->
+    <div class="result-section">
+      <p class="sec-num">SECTION 04</p>
+      <h2 class="sec-title">4가지 소통 차원 <em>비교</em></h2>
+      <p style="font-size:14px;color:var(--silver);line-height:1.75;margin-bottom:20px;">
+        중앙을 기준으로 각 차원에서 두 사람이 어느 방향으로 얼마나 성향이 있는지 보여줍니다.
+      </p>
+      <div class="butterfly-card">
+        <div class="butterfly-title">
+          <span style="color:var(--A)">▬ ${nameA}</span>
+          &nbsp;&nbsp;
+          <span style="color:var(--B)">▬ ${nameB}</span>
+        </div>
+        ${butterflyRows}
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- 상세 리포트 안내 -->
+    <div style="text-align:center; padding: 32px 0 48px;">
+      <p style="font-size:13px;color:var(--silver);margin-bottom:20px;">
+        위 내용은 기본 결과입니다.<br/>
+        각자의 소통 스타일 분석, 맞춤 가이드, 워크북 질문은 상세 리포트에 담겨 있어요.
+      </p>
+      <button style="background:linear-gradient(135deg,var(--gold),var(--goldL));border:none;border-radius:14px;color:#000;font-family:'Noto Sans KR',sans-serif;font-size:15px;font-weight:900;padding:15px 32px;cursor:pointer;letter-spacing:0.03em;" onclick="showUpsell()">
+        🔓 상세 리포트 보기
+      </button>
+    </div>`;
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showUpsell() {
+  document.getElementById('result-screen').style.display = 'none';
+  document.getElementById('upsell-screen').style.display = 'block';
+  // 결제 URL 동적 설정
+  document.getElementById('btn-pay').href = PAY_URL;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showFullResult() {
+  document.getElementById('upsell-screen').style.display = 'none';
+  renderResult(savedTypeA, savedTypeB, savedAxA, savedAxB);
 }
 
 // ── 결과 렌더 ──
