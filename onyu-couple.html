@@ -518,13 +518,25 @@ function submitCode() {
   const err = document.getElementById('code-error');
   if (!val) { err.textContent = '코드를 입력해주세요.'; return; }
   if (VALID_CODES.includes(val)) {
-    premiumUnlocked = true;
     err.textContent = '';
-    showFullResult();
+    goToReport();
   } else {
     err.textContent = '유효하지 않은 코드입니다. 다시 확인해주세요.';
     document.getElementById('report-code').focus();
   }
+}
+
+function goToReport() {
+  // 결과 데이터를 URL 파라미터로 onyu-report.html에 전달
+  const params = new URLSearchParams({
+    na: nameA,
+    nb: nameB,
+    ta: savedTypeA,
+    tb: savedTypeB,
+    aa: savedAxA.join(','),
+    ab: savedAxB.join(','),
+  });
+  location.href = 'onyu-report.html?' + params.toString();
 }
 
 // ── 유형 데이터 (온유스쿨 언어로) ──
@@ -1106,8 +1118,7 @@ function showUpsell() {
 }
 
 function showFullResult() {
-  document.getElementById('upsell-screen').style.display = 'none';
-  renderResult(savedTypeA, savedTypeB, savedAxA, savedAxB);
+  goToReport();
 }
 
 // ── 결과 렌더 ──
@@ -1360,7 +1371,6 @@ if (new URLSearchParams(location.search).get('demo') === '1') {
   savedAxA = [65, 38, 72, 32, 28, 72, 78, 28];
   savedAxB = [33, 62, 33, 67, 67, 33, 38, 67];
   document.getElementById('start-screen').style.display = 'none';
-  // 기본 결과부터 시작 (업셀 흐름 포함)
   showBasicResult('HARMONY', 'LEADER', savedAxA, savedAxB);
 }
 </script>
