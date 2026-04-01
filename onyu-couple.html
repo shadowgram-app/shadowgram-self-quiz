@@ -1353,14 +1353,15 @@ function printReport() {
   window.print();
 }
 
-// ── 데모 모드 (?demo=1) ──
+// ── 데모 모드 (?demo=1) — 실제 업셀 흐름 그대로 ──
 if (new URLSearchParams(location.search).get('demo') === '1') {
   nameA = '남편'; nameB = '아내';
-  premiumUnlocked = true;
-  const axA = [65, 38, 72, 32, 28, 72, 78, 28];
-  const axB = [33, 62, 33, 67, 67, 33, 38, 67];
+  savedTypeA = 'HARMONY'; savedTypeB = 'LEADER';
+  savedAxA = [65, 38, 72, 32, 28, 72, 78, 28];
+  savedAxB = [33, 62, 33, 67, 67, 33, 38, 67];
   document.getElementById('start-screen').style.display = 'none';
-  renderResult('HARMONY', 'LEADER', axA, axB);
+  // 기본 결과부터 시작 (업셀 흐름 포함)
+  showBasicResult('HARMONY', 'LEADER', savedAxA, savedAxB);
 }
 </script>
 </body>
