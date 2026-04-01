@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>온유스쿨 · 부부클래스 — 소통스타일 리포트</title>
+<meta name="robots" content="noindex"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:     #0F121E;
+  --bg2:    #161A28;
+  --card:   #1E2233;
+  --text:   #E8E4DC;
+  --gold:   #C9A84C;
+  --goldL:  #E8D090;
+  --silver: #8899AA;
+  --border: rgba(201,168,76,0.18);
+  --green:  #4CAF82;
+  --red:    #E05040;
+  --rose:   #D4886A;
+  --A:      #C9A84C;
+  --B:      #8A70C0;
+}
+html { font-size: 16px; scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', sans-serif; min-height: 100vh; }
+
+/* ── NAV ── */
+nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px; border-bottom: 1px solid var(--border);
+  position: sticky; top: 0;
+  background: rgba(15,18,30,0.97); backdrop-filter: blur(8px); z-index: 100;
+}
+.nav-logo { font-size: 15px; font-weight: 900; letter-spacing: 0.08em; color: var(--gold); text-decoration: none; }
+.nav-sub { font-size: 11px; color: var(--silver); letter-spacing: 0.1em; }
+
+/* ── 시작 화면 ── */
+#start-screen { max-width: 560px; margin: 0 auto; padding: 48px 20px 80px; text-align: center; }
+.kicker { font-size: 11px; letter-spacing: 0.2em; color: var(--gold); text-transform: uppercase; margin-bottom: 16px; }
+.main-title { font-family: 'Noto Serif KR', serif; font-size: clamp(26px, 6vw, 38px); font-weight: 700; line-height: 1.35; margin-bottom: 12px; }
+.main-title em { color: var(--gold); font-style: italic; }
+.main-sub { font-size: 14px; color: var(--silver); line-height: 1.75; margin-bottom: 36px; }
+
+.name-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 28px 24px; margin-bottom: 14px; text-align: left;
+}
+.name-card h3 {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 14px; font-weight: 700; margin-bottom: 14px;
+}
+.badge { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; font-size: 12px; font-weight: 900; }
+.badge-a { background: var(--A); color: #000; }
+.badge-b { background: var(--B); color: #fff; }
+.name-input {
+  width: 100%; background: var(--bg2);
+  border: 1px solid var(--border); border-radius: 10px;
+  color: var(--text); font-family: 'Noto Sans KR', sans-serif;
+  font-size: 16px; padding: 13px 16px; outline: none;
+  transition: border-color .2s;
+}
+.name-input:focus { border-color: var(--gold); }
+
+.guide-card {
+  background: rgba(201,168,76,.07); border: 1px solid rgba(201,168,76,.2);
+  border-radius: 14px; padding: 18px 20px; margin: 20px 0; text-align: left;
+}
+.guide-card p { font-size: 13px; color: var(--silver); line-height: 1.8; }
+.guide-card strong { color: var(--text); }
+
+.btn-start {
+  width: 100%; background: linear-gradient(135deg, var(--gold), var(--goldL));
+  border: none; border-radius: 14px; color: #000;
+  font-family: 'Noto Sans KR', sans-serif; font-size: 16px; font-weight: 900;
+  padding: 17px; cursor: pointer; transition: opacity .2s; letter-spacing: 0.03em;
+}
+.btn-start:hover { opacity: .9; }
+.btn-start:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ── 검사 화면 ── */
+#quiz-screen { display: none; }
+.prog-wrap { position: sticky; top: 54px; z-index: 90; background: var(--bg); padding: 10px 20px 0; }
+.prog-top { display: flex; justify-content: space-between; font-size: 11px; color: var(--silver); margin-bottom: 6px; }
+.prog-bar { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.prog-fill { height: 100%; background: linear-gradient(90deg, var(--gold), var(--goldL)); border-radius: 2px; transition: width .4s; }
+.phase-badge {
+  display: inline-block; font-size: 11px; letter-spacing: 0.12em;
+  color: var(--gold); margin-top: 7px; padding-bottom: 8px;
+}
+
+.quiz-body { max-width: 680px; margin: 0 auto; padding: 16px 20px 80px; }
+
+/* 공통 문항 */
+.q-shared { margin-bottom: 20px; }
+.q-num { font-size: 11px; letter-spacing: 0.15em; color: var(--gold); margin-bottom: 10px; }
+.q-text { font-size: clamp(17px, 4vw, 22px); font-weight: 600; line-height: 1.55; }
+
+/* ── 패널 (AB 선택) ── */
+.panels { display: flex; flex-direction: column; gap: 12px; }
+.panel-ab {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 18px;
+}
+.panel-header { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+.panel-name { font-size: 14px; font-weight: 700; flex: 1; }
+.panel-status { font-size: 11px; color: var(--silver); transition: color .2s; }
+.panel-status.done { color: var(--green); font-weight: 700; }
+.panel-a { border-color: rgba(201,168,76,.3); }
+.panel-b { border-color: rgba(138,112,192,.3); }
+
+.ab-btns { display: flex; flex-direction: column; gap: 10px; }
+.ab-btn {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px 16px;
+  color: var(--text); font-family: 'Noto Sans KR', sans-serif;
+  font-size: 14px; text-align: left; cursor: pointer;
+  display: flex; align-items: flex-start; gap: 12px;
+  transition: border-color .15s, background .15s;
+}
+.ab-btn:hover { border-color: var(--gold); }
+.ab-lbl {
+  flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; border: 1px solid var(--border);
+  background: var(--bg);
+}
+.la { color: var(--A); border-color: rgba(201,168,76,.4); }
+.lb { color: var(--B); border-color: rgba(138,112,192,.4); }
+.ab-btn.sel-a { border-color: var(--A); background: rgba(201,168,76,.1); }
+.ab-btn.sel-a .la { background: var(--A); color: #000; border-color: var(--A); }
+.ab-btn.sel-b { border-color: var(--B); background: rgba(138,112,192,.1); }
+.ab-btn.sel-b .lb { background: var(--B); color: #fff; border-color: var(--B); }
+
+/* ── 4점 척도 패널 ── */
+.panel-scale {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 18px;
+}
+.scale-poles { display: flex; justify-content: space-between; font-size: 12px; color: var(--silver); margin-bottom: 12px; }
+.scale-pole.right { text-align: right; }
+.scale4-btns { display: flex; gap: 8px; margin-bottom: 6px; }
+.s4-btn {
+  flex: 1; padding: 12px 6px; border-radius: 10px;
+  border: 1.5px solid var(--border); background: var(--bg2);
+  color: var(--silver); font-family: 'Noto Sans KR', sans-serif;
+  font-size: 11px; line-height: 1.4; text-align: center; cursor: pointer;
+  transition: all .15s;
+}
+.s4-btn:hover { border-color: var(--gold); color: var(--text); }
+.s4-btn.sel { border-color: var(--gold); background: rgba(201,168,76,.15); color: var(--goldL); font-weight: 700; }
+.panel-scale.panel-b .s4-btn.sel { border-color: var(--B); background: rgba(138,112,192,.15); color: #c4b5fd; }
+.s4-labels { display: flex; justify-content: space-between; font-size: 9px; color: var(--silver); }
+
+/* ── 하단 네비 ── */
+.quiz-nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: rgba(15,18,30,.97); border-top: 1px solid var(--border);
+  padding: 12px 20px; display: flex; align-items: center; justify-content: space-between;
+  gap: 12px;
+}
+.btn-prev {
+  background: none; border: 1px solid var(--border); border-radius: 10px;
+  color: var(--silver); font-family: 'Noto Sans KR', sans-serif;
+  font-size: 14px; padding: 11px 18px; cursor: pointer; transition: .2s;
+}
+.btn-prev:hover { border-color: var(--gold); color: var(--text); }
+.wait-msg { font-size: 12px; color: var(--silver); flex: 1; text-align: center; min-height: 18px; }
+.btn-next {
+  background: var(--border); border: none; border-radius: 10px;
+  color: var(--silver); font-family: 'Noto Sans KR', sans-serif;
+  font-size: 15px; font-weight: 700; padding: 12px 24px; cursor: pointer; transition: .2s;
+}
+.btn-next.ready { background: linear-gradient(135deg, var(--gold), var(--goldL)); color: #000; }
+
+/* ── 결과 화면 ── */
+#result-screen { display: none; max-width: 720px; margin: 0 auto; padding: 32px 20px 80px; }
+
+/* 커버 */
+.result-cover {
+  background: linear-gradient(135deg, #1a1228, #0F121E);
+  border: 1px solid var(--border); border-radius: 20px;
+  padding: 32px 24px; text-align: center; margin-bottom: 20px;
+}
+.result-kicker { font-size: 11px; letter-spacing: 0.2em; color: var(--gold); margin-bottom: 12px; }
+.result-couple-row { display: flex; align-items: center; justify-content: center; gap: 20px; margin: 16px 0; }
+.result-person { text-align: center; }
+.result-type-icon { font-size: 36px; margin-bottom: 4px; }
+.result-type-code { font-size: 22px; font-weight: 900; }
+.result-person-name { font-size: 12px; color: var(--silver); margin-top: 4px; }
+.result-heart { font-size: 28px; }
+.result-date { font-size: 12px; color: var(--silver); margin-top: 16px; }
+
+/* 섹션 */
+.result-section { margin-bottom: 28px; }
+.sec-num { font-size: 11px; letter-spacing: 0.18em; color: var(--silver); margin-bottom: 6px; }
+.sec-title { font-family: 'Noto Serif KR', serif; font-size: clamp(20px, 4.5vw, 28px); font-weight: 700; line-height: 1.3; margin-bottom: 18px; }
+.sec-title em { color: var(--gold); font-style: italic; }
+
+.content-block {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 20px 22px; margin-bottom: 12px;
+}
+.block-header { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; margin-bottom: 10px; }
+.block-body { font-size: 15px; line-height: 1.8; color: var(--text); }
+
+/* 소통 적합도 카드 */
+.compat-card {
+  background: linear-gradient(135deg, rgba(201,168,76,.12), rgba(201,168,76,.04));
+  border: 1px solid rgba(201,168,76,.3);
+  border-radius: 16px; padding: 28px; text-align: center; margin-bottom: 16px;
+}
+.compat-score { font-size: 64px; font-weight: 900; color: var(--gold); line-height: 1; margin-bottom: 6px; }
+.compat-label { font-size: 12px; color: var(--silver); margin-bottom: 8px; }
+.compat-title { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+.compat-desc { font-size: 14px; color: var(--silver); line-height: 1.75; }
+
+/* 나비형 차트 */
+.butterfly-section { margin-bottom: 16px; }
+.butterfly-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 20px 22px; margin-bottom: 12px;
+}
+.butterfly-title { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: var(--silver); margin-bottom: 14px; text-transform: uppercase; }
+.bf-row { margin-bottom: 14px; }
+.bf-dim-label { font-size: 11px; color: var(--silver); margin-bottom: 6px; letter-spacing: 0.05em; }
+.bf-poles { display: flex; justify-content: space-between; font-size: 10px; color: var(--silver); margin-bottom: 4px; }
+.bf-bar-wrap {
+  display: flex; align-items: center; height: 28px;
+  background: rgba(255,255,255,.04); border-radius: 4px; overflow: hidden;
+  position: relative;
+}
+/* 중앙선 */
+.bf-bar-wrap::after {
+  content: ''; position: absolute; left: 50%; top: 0; bottom: 0;
+  width: 2px; background: rgba(255,255,255,.15); transform: translateX(-50%);
+}
+.bf-bar-a, .bf-bar-b {
+  position: absolute; height: 50%; border-radius: 2px; transition: width .8s cubic-bezier(.34,1.56,.64,1);
+}
+.bf-bar-a { top: 0; background: linear-gradient(90deg, var(--A), rgba(201,168,76,.6)); }
+.bf-bar-b { bottom: 0; background: linear-gradient(90deg, var(--B), rgba(138,112,192,.6)); }
+/* 왼쪽 성향이면 오른쪽에서 중앙으로, 오른쪽 성향이면 왼쪽에서 중앙으로 */
+.bf-legend { display: flex; justify-content: space-between; font-size: 10px; margin-top: 4px; }
+.bf-legend-a { color: var(--A); }
+.bf-legend-b { color: var(--B); }
+.bf-diff-badge {
+  display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 99px;
+  margin-top: 4px;
+}
+.bf-diff-low { background: rgba(76,175,130,.15); color: var(--green); }
+.bf-diff-mid { background: rgba(245,158,11,.15); color: #fbbf24; }
+.bf-diff-high { background: rgba(224,80,64,.15); color: var(--red); }
+
+/* 유형 카드 */
+.type-pair-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+@media (max-width: 500px) { .type-pair-grid { grid-template-columns: 1fr; } }
+.type-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 18px;
+}
+.type-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.type-card-icon { font-size: 24px; }
+.type-card-name { font-size: 15px; font-weight: 900; }
+.type-card-sub { font-size: 11px; color: var(--silver); margin-top: 2px; }
+.type-trait { font-size: 13px; line-height: 1.7; color: var(--silver); display: flex; gap: 7px; margin-bottom: 6px; }
+.trait-icon { flex-shrink: 0; font-size: 12px; margin-top: 2px; }
+
+/* 소통 가이드 */
+.guide-item {
+  display: flex; gap: 14px; align-items: flex-start;
+  padding: 12px 0; border-bottom: 1px solid var(--border);
+  font-size: 14px; line-height: 1.7;
+}
+.guide-item:last-child { border-bottom: none; }
+.guide-num {
+  flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%;
+  background: rgba(201,168,76,.12); border: 1px solid rgba(201,168,76,.25);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: var(--gold);
+}
+
+/* 디바이더 */
+.divider { height: 1px; background: var(--border); margin: 28px 0; }
+
+/* 푸터 */
+.report-footer {
+  text-align: center; padding: 28px 0 16px;
+  border-top: 1px solid var(--border);
+  font-size: 11px; color: var(--silver); letter-spacing: 0.05em; line-height: 2;
+}
+
+/* PDF 버튼 */
+.btn-pdf {
+  background: linear-gradient(135deg, var(--gold), var(--goldL));
+  border: none; border-radius: 10px;
+  color: #000; font-family: 'Noto Sans KR', sans-serif;
+  font-size: 13px; font-weight: 700;
+  padding: 9px 18px; cursor: pointer; transition: opacity .2s;
+}
+.btn-pdf:hover { opacity: .9; }
+
+/* ── PDF 인쇄 모드 ── */
+@media print {
+  body { background: #fff !important; color: #111 !important; }
+  nav, .quiz-nav, .btn-pdf, #quiz-screen, #start-screen { display: none !important; }
+  #result-screen { display: block !important; padding: 0 !important; }
+  .result-cover, .content-block, .butterfly-card, .type-card, .compat-card {
+    background: #fff !important; border-color: #ddd !important; color: #111 !important;
+    -webkit-print-color-adjust: exact;
+  }
+  .sec-title, .block-header, .block-body, .type-card-name,
+  .compat-title, .compat-score { color: #111 !important; }
+  .sec-num, .compat-label, .type-card-sub, .type-trait,
+  .bf-dim-label, .bf-poles, .bf-legend, .silver { color: #555 !important; }
+  .result-kicker, .guide-num, .phase-badge { color: #8B6914 !important; }
+  .bf-bar-a { background: #C9A84C !important; }
+  .bf-bar-b { background: #8A70C0 !important; }
+  .report-footer { border-color: #ddd !important; color: #888 !important; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-logo">온유스쿨 · 부부클래스</span>
+  <span class="nav-sub">소통스타일 리포트</span>
+  <button class="btn-pdf" id="btn-pdf" style="display:none;" onclick="printReport()">🖨 인쇄 / PDF</button>
+</nav>
+
+<!-- ① 시작 화면 -->
+<div id="start-screen">
+  <p class="kicker">ONYU SCHOOL · 부부클래스</p>
+  <h1 class="main-title">우리 부부,<br/>어떻게 <em>다르게</em> 소통할까요?</h1>
+  <p class="main-sub">두 사람이 같은 화면을 보며 각자 답합니다.<br/>24문항으로 부부의 소통 스타일을 분석합니다.</p>
+
+  <div class="name-card">
+    <h3><span class="badge badge-a">A</span> 남편 이름</h3>
+    <input class="name-input" id="name-a" placeholder="이름을 입력하세요" oninput="checkNames()" onkeypress="if(event.key==='Enter')document.getElementById('name-b').focus()"/>
+  </div>
+  <div class="name-card">
+    <h3><span class="badge badge-b">B</span> 아내 이름</h3>
+    <input class="name-input" id="name-b" placeholder="이름을 입력하세요" oninput="checkNames()" onkeypress="if(event.key==='Enter')startQuiz()"/>
+  </div>
+
+  <div class="guide-card">
+    <p>
+      <strong>📋 진행 방법</strong><br/>
+      · 두 분이 같은 화면을 보며 각자 선택합니다<br/>
+      · 1단계 (Q1~12): A·B 중 하나 선택<br/>
+      · 2단계 (Q13~24): 4가지 중 하나 선택<br/>
+      · 두 분 모두 선택해야 다음 문항으로 넘어갑니다
+    </p>
+  </div>
+
+  <button class="btn-start" id="btn-start" onclick="startQuiz()" disabled>검사 시작하기 →</button>
+  <p style="font-size:11px; color:var(--silver); margin-top:14px; line-height:1.7;">
+    이 검사는 부부 소통 이해를 위한 참고 도구이며,<br/>전문적인 상담을 대체하지 않습니다.
+  </p>
+</div>
+
+<!-- ② 검사 화면 -->
+<div id="quiz-screen">
+  <div class="prog-wrap">
+    <div class="prog-top">
+      <span id="prog-step">1 / 24</span>
+      <span class="phase-badge" id="phase-text">1단계 · 소통 스타일 찾기</span>
+      <span id="prog-pct">0%</span>
+    </div>
+    <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+  <div class="quiz-body">
+    <div id="q-area"></div>
+  </div>
+  <div class="quiz-nav">
+    <button class="btn-prev" id="btn-prev" onclick="prevQ()">← 이전</button>
+    <span class="wait-msg" id="wait-msg"></span>
+    <button class="btn-next" id="btn-next" onclick="nextQ()">다음 →</button>
+  </div>
+</div>
+
+<!-- ③ 결과 화면 -->
+<div id="result-screen"></div>
+
+<script src="sg-data.js"></script>
+<script>
+// ══════════════════════════════════════════════
+// 온유스쿨 · 부부클래스 소통스타일 리포트
+// 42world와 동일 구조, 문항만 부부 맥락으로 교체
+// ══════════════════════════════════════════════
+
+// ── 유형 데이터 (온유스쿨 언어로) ──
+const OY_TYPES = {
+  STEADY: {
+    icon: '🌿', name: 'STEADY', label: '신뢰형',
+    sub: '꾸준함과 신실함으로 관계를 지켜가는 스타일',
+    strength: [
+      '한번 약속하면 끝까지 지켜요. 신뢰가 관계의 기초라는 것을 몸으로 보여줍니다.',
+      '배우자가 흔들릴 때 든든한 중심이 되어줍니다. 일관된 사랑이 강점이에요.',
+      '작은 것을 꾸준히 챙깁니다. 말보다 행동으로 사랑을 표현하는 스타일이에요.',
+    ],
+    growth: [
+      '변화에 적응하는 속도가 느릴 수 있어요. 배우자의 새로운 시도를 지지하는 연습이 도움됩니다.',
+      '속마음을 잘 꺼내지 않아요. 감정을 말로 표현하는 것이 관계를 더 깊게 합니다.',
+      '익숙한 것에 집착하면 성장의 기회를 놓칠 수 있어요.',
+    ],
+  },
+  SPARK: {
+    icon: '🔥', name: 'SPARK', label: '활력형',
+    sub: '새로운 아이디어와 에너지로 관계에 활기를 불어넣는 스타일',
+    strength: [
+      '아이디어가 풍부하고 대화가 즐겁습니다. 함께 있으면 새로운 가능성이 보여요.',
+      '에너지가 전염됩니다. 배우자에게 긍정적인 활기를 줄 수 있어요.',
+      '변화를 두려워하지 않아요. 어려운 상황에서도 새로운 돌파구를 찾습니다.',
+    ],
+    growth: [
+      '시작은 열정적인데 마무리가 아쉬울 수 있어요. 끝까지 함께하는 훈련이 필요합니다.',
+      '즉흥성이 배우자를 지치게 할 수 있어요. 함께 세운 계획을 소중히 여겨보세요.',
+      '과거의 경험에서 배우는 것이 중요합니다. 비슷한 갈등이 반복된다면 패턴을 함께 살펴보세요.',
+    ],
+  },
+  PLAYER: {
+    icon: '⚡', name: 'PLAYER', label: '현재형',
+    sub: '지금 이 순간에 집중하며 활기차게 살아가는 스타일',
+    strength: [
+      '함께 있을 때 온 마음을 다해 집중합니다. 배우자가 소중히 여겨진다고 느낄 수 있어요.',
+      '행동이 빠르고 추진력이 있어요. 문제가 생기면 먼저 해결책을 찾아 움직입니다.',
+      '경험을 통해 빠르게 배웁니다. 새로운 도전에도 잘 적응해요.',
+    ],
+    growth: [
+      '미래 계획이 약할 수 있어요. 배우자와 함께 장기적인 방향을 세우는 시간이 필요합니다.',
+      '깊은 감정 대화가 불편할 수 있어요. 배우자의 내면 이야기에 귀를 기울이는 연습이 도움됩니다.',
+      '일상의 안정감이 관계를 지켜준다는 것을 기억하세요.',
+    ],
+  },
+  VISION: {
+    icon: '🔮', name: 'VISION', label: '통찰형',
+    sub: '깊은 통찰과 큰 그림으로 관계의 방향을 함께 그려가는 스타일',
+    strength: [
+      '큰 그림을 봅니다. 우리 가정이 어떤 방향으로 가야 하는지 직관적으로 알아요.',
+      '본질을 꿰뚫습니다. 갈등의 표면이 아닌 진짜 원인을 찾아내요.',
+      '영감이 풍부합니다. 예상치 못한 곳에서 새로운 가능성을 발견해요.',
+    ],
+    growth: [
+      '현실 감각이 흐릿할 때가 있어요. 지금 당장의 작은 한 걸음도 중요합니다.',
+      '혼자만의 세계에 빠지면 배우자가 소외감을 느낄 수 있어요.',
+      '결정을 미루는 경향이 있어요. 완벽한 선택보다 함께 결정하는 과정이 더 중요합니다.',
+    ],
+  },
+  LOGIC: {
+    icon: '⚙️', name: 'LOGIC', label: '분석형',
+    sub: '논리적이고 명확한 소통으로 문제를 해결해가는 스타일',
+    strength: [
+      '복잡한 상황을 명확하게 정리합니다. 감정이 뒤엉킨 갈등에서도 핵심을 짚어요.',
+      '공정하게 판단합니다. 편견 없이 상황을 분석하고 합리적인 결론을 찾아요.',
+      '독립적입니다. 배우자에게 불필요한 부담을 주지 않으려 노력해요.',
+    ],
+    growth: [
+      '감정 표현이 서툴 수 있어요. 논리로 대답하면 배우자가 공감받지 못했다고 느낍니다.',
+      '차갑게 보일 수 있어요. 분석보다 먼저 "많이 힘들었겠다"는 한마디가 필요할 때가 있어요.',
+      '틀렸을 때 인정하기 어려울 수 있어요. 부부 사이에서는 옳고 그름보다 연결이 우선입니다.',
+    ],
+  },
+  HARMONY: {
+    icon: '🌸', name: 'HARMONY', label: '배려형',
+    sub: '따뜻한 배려와 공감으로 관계의 분위기를 살려가는 스타일',
+    strength: [
+      '배우자의 감정 상태를 먼저 알아챕니다. 말하지 않아도 느끼는 공감 능력이 있어요.',
+      '갈등을 부드럽게 풀어냅니다. 날카로운 상황에서도 온기를 잃지 않아요.',
+      '배려가 자연스럽습니다. 배우자가 필요한 것을 챙기는 것이 본능처럼 느껴져요.',
+    ],
+    growth: [
+      '자기 감정을 뒤로 미루기 쉬워요. 배우자에게 "나도 힘들어"라고 말할 수 있어야 합니다.',
+      '갈등 자체를 피하려는 경향이 있어요. 작은 불만을 쌓아두면 나중에 더 큰 상처가 됩니다.',
+      '인정받고 싶은 욕구가 클 수 있어요. 사랑은 확인이 아닌 신뢰에 기반할 때 건강해집니다.',
+    ],
+  },
+  LEADER: {
+    icon: '👑', name: 'LEADER', label: '주도형',
+    sub: '명확한 방향성과 추진력으로 가정을 이끌어가는 스타일',
+    strength: [
+      '방향이 명확합니다. 가정의 목표가 생기면 가장 빠른 길을 찾아 움직여요.',
+      '솔직합니다. 돌려 말하지 않고 직접 표현하는 것이 오히려 신뢰를 만들어요.',
+      '배우자를 성장시키는 사람입니다. 자극을 주는 방식으로 사랑을 표현해요.',
+    ],
+    growth: [
+      '내 방식이 맞다는 확신이 강할 수 있어요. 배우자의 의견을 듣는 것이 더 나은 결정을 만듭니다.',
+      '감정보다 효율이 먼저일 때가 있어요. 배우자가 과정에서 소외되지 않도록 주의하세요.',
+      '약한 모습을 보이기 어려울 수 있어요. 배우자 앞에서 솔직한 취약함이 진짜 신뢰를 만듭니다.',
+    ],
+  },
+  SOUL: {
+    icon: '🌙', name: 'SOUL', label: '깊이형',
+    sub: '진심 깊은 감성과 뚜렷한 가치관으로 관계를 가꾸는 스타일',
+    strength: [
+      '진심이 깊습니다. 한번 마음을 주면 오래가고, 관계에 가벼움이 없어요.',
+      '내면의 세계가 풍부합니다. 말 대신 다른 방식으로 사랑을 표현해요.',
+      '가치관이 뚜렷합니다. 중요한 것을 지키기 위해 타협하지 않아요.',
+    ],
+    growth: [
+      '표현이 부족할 수 있어요. 속으로 다 느끼면서도 배우자는 무관심으로 오해할 수 있어요.',
+      '상처를 오래 품는 경향이 있어요. 용서와 화해의 과정이 관계를 회복시킵니다.',
+      '완전한 이해를 원하는 마음이 클 수 있어요. 배우자가 다름을 인정하는 것이 성숙함입니다.',
+    ],
+  },
+};
+
+// ── 소통 적합도 (비기독교 용어 제거) ──
+const OY_COMPAT = {
+  _get(t1, t2) {
+    const key1 = t1 + '-' + t2, key2 = t2 + '-' + t1;
+    return this[key1] || this[key2] || this._default(t1, t2);
+  },
+  _default(t1, t2) {
+    if (t1 === t2) return {
+      score: 74,
+      title: '거울처럼 닮은 두 사람',
+      desc: '같은 소통 스타일을 가진 두 분은 서로를 빠르게 이해합니다. 다만 같은 성장 영역을 공유하기 때문에, 함께 의식적으로 노력할 부분이 있어요.',
+      challenge: '두 분이 같은 어려움을 가지고 있어요. 서로의 약점이 증폭되지 않도록 함께 인식하고 도와주는 것이 중요합니다.',
+      strength: '빠른 상호 이해, 깊은 공감대, 공통된 가치관.',
+    };
+    // 특정 조합
+    const maps = {
+      'LOGIC-HARMONY': { score: 78, title: '이성과 감성의 만남', desc: '논리적인 분석과 따뜻한 공감이 만나는 조합입니다. 서로의 강점이 다르기 때문에 함께할 때 더 완전해질 수 있어요.', challenge: 'LOGIC은 해결책을, HARMONY는 공감을 원합니다. "지금 네가 원하는 게 뭐야?"라고 먼저 물어보는 습관이 갈등을 줄여줍니다.', strength: '문제 해결력(LOGIC)과 관계 회복력(HARMONY)의 균형.' },
+      'LEADER-HARMONY': { score: 76, title: '방향과 온기의 조합', desc: '추진력 있는 리더십과 따뜻한 배려가 만나는 조합입니다. 목표와 관계 모두를 챙길 수 있는 가능성이 있어요.', challenge: 'LEADER의 직접적인 표현이 HARMONY에게 상처가 될 수 있어요. 말하기 전 한 번 더 온기를 담아보세요.', strength: '가정의 방향성(LEADER)과 관계의 따뜻함(HARMONY).' },
+      'STEADY-SPARK': { score: 72, title: '안정과 변화의 균형', desc: '꾸준함과 역동성이 만나는 조합입니다. 서로 다른 에너지가 균형을 이룰 때 강한 가정을 만들 수 있어요.', challenge: 'STEADY는 변화가 불편하고, SPARK는 정체가 답답할 수 있어요. 변화의 속도에 대해 솔직하게 대화해보세요.', strength: '안정감(STEADY)과 새로운 활력(SPARK)의 조화.' },
+      'VISION-LOGIC': { score: 75, title: '통찰과 분석의 시너지', desc: '큰 그림을 보는 통찰과 논리적 분석이 만나는 조합입니다. 함께라면 깊이 있는 대화와 건강한 결정을 내릴 수 있어요.', challenge: '둘 다 감정 표현이 적을 수 있어요. 의도적으로 따뜻한 말과 행동을 연습해보세요.', strength: '깊이 있는 사고와 명확한 분석으로 함께 성장.' },
+    };
+    return maps[t1+'-'+t2] || maps[t2+'-'+t1] || {
+      score: 70,
+      title: '서로 다른 두 사람',
+      desc: '두 분의 소통 스타일은 다릅니다. 그 다름이 때로는 오해를 만들지만, 서로를 이해할수록 더 풍성한 관계가 됩니다.',
+      challenge: '서로의 차이를 이해하는 데 시간이 필요합니다. 다름을 위협이 아닌 성장의 기회로 바라보세요.',
+      strength: '서로의 약점을 채워줄 수 있는 상호 보완적 관계.'
+    };
+  }
+};
+
+// ── 1단계: A/B 12문항 (부부 맥락) ──
+const Q_AB = [
+  { q: "갑자기 주말 계획이 바뀌었어요. 나는?",
+    a: { text: "솔직히 좀 불편해요. 미리 알았으면 좋았을 텐데.", scores: { STEADY:2, VISION:1 } },
+    b: { text: "오히려 괜찮아요! 즉흥적인 것도 재미있잖아요.", scores: { SPARK:2, PLAYER:1 } } },
+
+  { q: "배우자와 대화할 때 나는 더 자주?",
+    a: { text: "내 생각이나 의견을 먼저 이야기해요.", scores: { SPARK:2, LEADER:1 } },
+    b: { text: "배우자 말을 먼저 충분히 들어요.", scores: { HARMONY:2, SOUL:1 } } },
+
+  { q: "부부 갈등이 생겼을 때, 나의 첫 반응은?",
+    a: { text: "상황을 정리하고 싶어요. 감정보다 해결이 먼저예요.", scores: { LOGIC:2, LEADER:1 } },
+    b: { text: "감정이 먼저 올라와요. 빨리 이야기해야 풀려요.", scores: { HARMONY:2, SOUL:1 } } },
+
+  { q: "배우자에게 사랑을 표현하는 나만의 방식은?",
+    a: { text: "행동으로 보여줘요. 챙겨주고 함께 시간을 보내요.", scores: { STEADY:2, PLAYER:1 } },
+    b: { text: "말로 직접 표현해요. 솔직하게 감정을 꺼내요.", scores: { SPARK:1, HARMONY:2 } } },
+
+  { q: "10년 후 우리 가정의 모습을 생각할 때 나는?",
+    a: { text: "구체적인 계획과 방향이 머릿속에 그려져요.", scores: { STEADY:2, LEADER:1 } },
+    b: { text: "큰 방향이나 느낌만 있어요. 함께 만들어가면 되죠.", scores: { VISION:2, SPARK:1 } } },
+
+  { q: "배우자가 힘든 일을 털어놓을 때, 나는?",
+    a: { text: "해결책을 같이 찾아줘요. 도움이 되고 싶어요.", scores: { LOGIC:2, LEADER:1 } },
+    b: { text: "일단 다 들어줘요. 공감이 먼저라고 생각해요.", scores: { HARMONY:2, SOUL:1 } } },
+
+  { q: "새로운 것을 함께 시도하는 것에 대해 나는?",
+    a: { text: "익숙하고 검증된 방법이 더 편해요.", scores: { STEADY:2, LOGIC:1 } },
+    b: { text: "새로운 시도가 좋아요! 안 해본 게 더 재미있잖아요.", scores: { SPARK:2, PLAYER:1 } } },
+
+  { q: "부부 관계에서 나에게 가장 중요한 건?",
+    a: { text: "서로 믿고 편안한 것. 안정감이 제일이에요.", scores: { STEADY:2, HARMONY:1 } },
+    b: { text: "함께 성장하는 것. 서로 더 나아지는 느낌이요.", scores: { VISION:2, LEADER:1 } } },
+
+  { q: "배우자와 의견이 다를 때, 나는?",
+    a: { text: "논리적으로 내 입장을 설명해요.", scores: { LOGIC:2, LEADER:1 } },
+    b: { text: "우선 배우자 입장을 이해하려고 해요.", scores: { HARMONY:2, SOUL:1 } } },
+
+  { q: "혼자만의 시간이 필요할 때, 나는?",
+    a: { text: "솔직하게 말해요. '나 혼자 있고 싶어'라고요.", scores: { SOUL:2, LOGIC:1 } },
+    b: { text: "자연스럽게 조용히 공간을 찾아요.", scores: { STEADY:1, VISION:2 } } },
+
+  { q: "배우자와 함께 있을 때 나는 주로?",
+    a: { text: "에너지가 올라가요. 함께 있는 것이 충전이 돼요.", scores: { PLAYER:2, SPARK:1 } },
+    b: { text: "편안한데 가끔 혼자 있는 시간이 그리워요.", scores: { SOUL:2, VISION:1 } } },
+
+  { q: "배우자에게 어려운 이야기를 해야 할 때 나는?",
+    a: { text: "직접 말해요. 돌려 말하는 게 더 불편해요.", scores: { LEADER:2, LOGIC:1 } },
+    b: { text: "어떻게 말해야 상처가 안 될지 더 고민돼요.", scores: { HARMONY:2, SOUL:1 } } },
+];
+
+// ── 2단계: 4점 척도 12문항 (부부 맥락) ──
+// val 0=강하게left, 1=약하게left, 2=약하게right, 3=강하게right
+const Q4 = [
+  { q: "가정의 일상에서 계획대로 움직이는 게 얼마나 중요한가요?",
+    left: "계획이 있어야 안심돼요", right: "흐름대로 가는 게 편해요", axes: [0, 1] },
+  { q: "배우자와 대화할 때 새로운 아이디어나 연결이 얼마나 자주 떠오르나요?",
+    left: "자주 떠올라요", right: "별로 없어요", axes: [1, 3] },
+  { q: "배우자와 함께 있을 때 에너지는 어떻게 되나요?",
+    left: "충전돼요", right: "소모돼요", axes: [2, 7] },
+  { q: "부부 결정을 내릴 때 직관이나 느낌을 얼마나 신뢰하나요?",
+    left: "많이 믿어요", right: "근거가 있어야 믿어요", axes: [3, 4] },
+  { q: "부부 갈등 상황에서 논리와 감정 중 뭐가 먼저 나오나요?",
+    left: "논리가 먼저요", right: "감정이 먼저요", axes: [4, 5] },
+  { q: "배우자 기분이 안 좋을 때, 얼마나 빨리 알아채나요?",
+    left: "바로 알아요", right: "나중에 알게 돼요", axes: [5, 4] },
+  { q: "가정에서 방향이나 결정을 주도하는 편인가요?",
+    left: "자주 주도하는 편이에요", right: "따라가는 편이에요", axes: [6, 5] },
+  { q: "감정을 말로 표현하는 게 얼마나 편한가요?",
+    left: "편해요", right: "어렵고 불편해요", axes: [7, 4] },
+  { q: "집안일이나 해야 할 일을 미루는 편인가요?",
+    left: "잘 안 미뤄요", right: "자주 미뤄요", axes: [0, 1] },
+  { q: "행동하기 전에 충분히 생각하는 시간이 필요한가요?",
+    left: "충분히 생각해요", right: "일단 해보고 생각해요", axes: [4, 2] },
+  { q: "배우자와 깊은 대화를 얼마나 자주 하고 싶은가요?",
+    left: "자주 하고 싶어요", right: "가끔이면 충분해요", axes: [7, 3] },
+  { q: "부부가 함께 세운 목표나 방향을 바꾸는 경우가 얼마나 되나요?",
+    left: "거의 안 바꿔요", right: "자주 바꾸는 편이에요", axes: [6, 1] },
+];
+
+const S4_LABELS = ['확실히\n이쪽', '약간\n이쪽', '약간\n저쪽', '확실히\n저쪽'];
+
+// ── 상태 ──
+let nameA = '', nameB = '';
+let currentQ = 0;
+let answersA = new Array(24).fill(null);
+let answersB = new Array(24).fill(null);
+
+// ── 시작 ──
+function checkNames() {
+  nameA = document.getElementById('name-a').value.trim();
+  nameB = document.getElementById('name-b').value.trim();
+  document.getElementById('btn-start').disabled = !(nameA && nameB);
+}
+
+function startQuiz() {
+  nameA = document.getElementById('name-a').value.trim();
+  nameB = document.getElementById('name-b').value.trim();
+  if (!nameA || !nameB) return;
+  document.getElementById('start-screen').style.display = 'none';
+  document.getElementById('quiz-screen').style.display = 'block';
+  render();
+}
+
+// ── 렌더 ──
+function render() {
+  const qi = currentQ, total = 24;
+  const pct = Math.round(qi / total * 100);
+  document.getElementById('prog-step').textContent = `${qi+1} / ${total}`;
+  document.getElementById('prog-pct').textContent = `${pct}%`;
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('phase-text').textContent = qi < 12 ? '1단계 · 소통 스타일 찾기' : '2단계 · 성향 측정';
+  document.getElementById('btn-prev').style.visibility = qi === 0 ? 'hidden' : 'visible';
+
+  const area = document.getElementById('q-area');
+  area.innerHTML = '';
+  if (qi < 12) renderAB(area, qi);
+  else renderScale4(area, qi);
+  updateNextBtn();
+  updateWaitMsg();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderAB(area, qi) {
+  const q = Q_AB[qi];
+  const aA = answersA[qi], aB = answersB[qi];
+
+  area.innerHTML = `
+    <div class="q-shared">
+      <div class="q-num">Q${qi+1}.</div>
+      <div class="q-text">${q.q}</div>
+    </div>
+    <div class="panels">
+      <div class="panel-ab panel-a">
+        <div class="panel-header">
+          <span class="badge badge-a">A</span>
+          <span class="panel-name">${nameA}</span>
+          <span class="panel-status${aA!==null?' done':''}">${aA!==null?'✓ 선택완료':''}</span>
+        </div>
+        <div class="ab-btns">
+          <button class="ab-btn${aA===0?' sel-a':''}" onclick="selectAB(${qi},'A',0)">
+            <span class="ab-lbl la">A</span><span>${q.a.text}</span>
+          </button>
+          <button class="ab-btn${aA===1?' sel-a':''}" onclick="selectAB(${qi},'A',1)">
+            <span class="ab-lbl la">B</span><span>${q.b.text}</span>
+          </button>
+        </div>
+      </div>
+      <div class="panel-ab panel-b">
+        <div class="panel-header">
+          <span class="badge badge-b">B</span>
+          <span class="panel-name">${nameB}</span>
+          <span class="panel-status${aB!==null?' done':''}">${aB!==null?'✓ 선택완료':''}</span>
+        </div>
+        <div class="ab-btns">
+          <button class="ab-btn${aB===0?' sel-b':''}" onclick="selectAB(${qi},'B',0)">
+            <span class="ab-lbl lb">A</span><span>${q.a.text}</span>
+          </button>
+          <button class="ab-btn${aB===1?' sel-b':''}" onclick="selectAB(${qi},'B',1)">
+            <span class="ab-lbl lb">B</span><span>${q.b.text}</span>
+          </button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderScale4(area, qi) {
+  const si = qi - 12, q = Q4[si];
+  const aA = answersA[qi], aB = answersB[qi];
+
+  const makePanel = (who, answer, cls) => {
+    const nm = who === 'A' ? nameA : nameB;
+    const bdg = `<span class="badge badge-${cls}">${who}</span>`;
+    const btns = [0,1,2,3].map(v =>
+      `<button class="s4-btn${answer===v?' sel':''}" onclick="selectScale4(${qi},'${who}',${v})">
+        ${S4_LABELS[v].replace('\n','<br>')}
+      </button>`
+    ).join('');
+    return `
+      <div class="panel-scale panel-${cls}">
+        <div class="panel-header">
+          ${bdg}
+          <span class="panel-name">${nm}</span>
+          <span class="panel-status${answer!==null?' done':''}">${answer!==null?'✓ 선택완료':''}</span>
+        </div>
+        <div class="scale-poles">
+          <div class="scale-pole">${q.left}</div>
+          <div class="scale-pole right">${q.right}</div>
+        </div>
+        <div class="scale4-btns">${btns}</div>
+        <div class="s4-labels">
+          <div>←← 확실히</div><div>← 약간</div><div>약간 →</div><div>확실히 →→</div>
+        </div>
+      </div>`;
+  };
+
+  area.innerHTML = `
+    <div class="q-shared">
+      <div class="q-num">Q${qi+1}. <span style="font-size:10px;color:var(--silver);letter-spacing:1px;">성향 측정</span></div>
+      <div class="q-text">${q.q}</div>
+    </div>
+    <div class="panels">
+      ${makePanel('A', aA, 'a')}
+      ${makePanel('B', aB, 'b')}
+    </div>`;
+}
+
+function selectAB(qi, who, val) {
+  if (who === 'A') answersA[qi] = val; else answersB[qi] = val;
+  render();
+}
+
+function selectScale4(qi, who, val) {
+  if (who === 'A') answersA[qi] = val; else answersB[qi] = val;
+  render();
+}
+
+function updateWaitMsg() {
+  const qi = currentQ;
+  const dA = answersA[qi] !== null, dB = answersB[qi] !== null;
+  const msg = document.getElementById('wait-msg');
+  if (dA && dB) msg.textContent = '';
+  else if (dA) msg.textContent = `⏳ ${nameB}의 선택을 기다리고 있어요`;
+  else if (dB) msg.textContent = `⏳ ${nameA}의 선택을 기다리고 있어요`;
+  else msg.textContent = '';
+}
+
+function updateNextBtn() {
+  const qi = currentQ;
+  const ready = answersA[qi] !== null && answersB[qi] !== null;
+  const btn = document.getElementById('btn-next');
+  btn.className = 'btn-next' + (ready ? ' ready' : '');
+  btn.textContent = qi === 23 ? '결과 보기 →' : '다음 →';
+}
+
+function nextQ() {
+  if (answersA[currentQ] === null || answersB[currentQ] === null) return;
+  if (currentQ === 23) { calcResult(); return; }
+  currentQ++;
+  render();
+}
+
+function prevQ() {
+  if (currentQ === 0) return;
+  currentQ--;
+  render();
+}
+
+// ── 결과 계산 ──
+function calcResult() {
+  const init = () => ({ STEADY:0, SPARK:0, PLAYER:0, VISION:0, LOGIC:0, HARMONY:0, LEADER:0, SOUL:0 });
+  const scA = init(), scB = init();
+
+  for (let i = 0; i < 12; i++) {
+    const q = Q_AB[i];
+    const qA = (answersA[i] === 0 ? q.a : q.b).scores;
+    const qB = (answersB[i] === 0 ? q.a : q.b).scores;
+    for (const [t, v] of Object.entries(qA)) scA[t] = (scA[t] || 0) + v;
+    for (const [t, v] of Object.entries(qB)) scB[t] = (scB[t] || 0) + v;
+  }
+
+  // 4점 척도 → 축 점수 (0~100, 50이 중간)
+  const axA = [50,50,50,50,50,50,50,50];
+  const axB = [50,50,50,50,50,50,50,50];
+  const delta = [15, 7, -7, -15];
+  for (let i = 0; i < 12; i++) {
+    const [ax0, ax1] = Q4[i].axes;
+    axA[ax0] = Math.min(100, Math.max(0, axA[ax0] + delta[answersA[12+i]]));
+    axA[ax1] = Math.min(100, Math.max(0, axA[ax1] - delta[answersA[12+i]]));
+    axB[ax0] = Math.min(100, Math.max(0, axB[ax0] + delta[answersB[12+i]]));
+    axB[ax1] = Math.min(100, Math.max(0, axB[ax1] - delta[answersB[12+i]]));
+  }
+
+  const typeA = Object.entries(scA).sort((a,b) => b[1]-a[1])[0][0];
+  const typeB = Object.entries(scB).sort((a,b) => b[1]-a[1])[0][0];
+
+  renderResult(typeA, typeB, axA, axB);
+}
+
+// ── 결과 렌더 ──
+function renderResult(typeA, typeB, axA, axB) {
+  document.getElementById('quiz-screen').style.display = 'none';
+  const screen = document.getElementById('result-screen');
+  screen.style.display = 'block';
+  document.getElementById('btn-pdf').style.display = 'block';
+
+  const tA = OY_TYPES[typeA], tB = OY_TYPES[typeB];
+  const compat = OY_COMPAT._get(typeA, typeB);
+  const today = new Date().toLocaleDateString('ko-KR', { year:'numeric', month:'long', day:'numeric' });
+
+  // 4차원 나비 차트 데이터
+  const DIMS = [
+    { label: '에너지 방향', left: 'I · 내향', right: 'E · 외향', axIdx: [2, 7] },
+    { label: '인식 방식',   left: 'S · 구체', right: 'N · 직관', axIdx: [0, 3] },
+    { label: '판단 방식',   left: 'T · 논리', right: 'F · 관계', axIdx: [4, 5] },
+    { label: '생활 방식',   left: 'J · 계획', right: 'P · 유연', axIdx: [6, 1] },
+  ];
+
+  const butterflyRows = DIMS.map(dim => {
+    // 해당 차원의 점수: left 방향 점수 (높을수록 왼쪽)
+    const lA = axA[dim.axIdx[0]]; // 높을수록 left
+    const lB = axB[dim.axIdx[0]];
+    const diff = Math.abs(lA - lB);
+    const diffClass = diff < 20 ? 'bf-diff-low' : diff < 40 ? 'bf-diff-mid' : 'bf-diff-high';
+    const diffText = diff < 20 ? '✓ 유사' : diff < 40 ? '약간 다름' : '뚜렷한 차이';
+
+    // 나비형: 중앙(50%)을 기준으로 A는 위, B는 아래
+    // lA=70 → 왼쪽 70% 채움 / lA=30 → 오른쪽 70% 채움
+    const barStyleA = lA >= 50
+      ? `left:${100-lA}%; width:${lA-50}%; right:auto; /* left of center */`
+      : `left:50%; width:${50-lA}%; /* right side empty */`;
+
+    // 실제로는 간단히: A 막대 width = pct, 오른쪽 정렬이면 right:50%, 왼쪽이면 left:50%
+    const wA = Math.abs(lA - 50);
+    const wB = Math.abs(lB - 50);
+    const dirA = lA >= 50 ? 'right' : 'left'; // lA높을수록 left 성향 → 중앙 기준 왼쪽으로
+    const dirB = lB >= 50 ? 'right' : 'left';
+
+    const styleA = dirA === 'right'
+      ? `right:50%; width:${wA}%;`
+      : `left:50%; width:${wA}%;`;
+    const styleB = dirB === 'right'
+      ? `right:50%; width:${wB}%;`
+      : `left:50%; width:${wB}%;`;
+
+    return `
+      <div class="bf-row">
+        <div class="bf-dim-label">${dim.label}</div>
+        <div class="bf-poles"><span>${dim.left}</span><span>${dim.right}</span></div>
+        <div class="bf-bar-wrap">
+          <div class="bf-bar-a" style="${styleA}" data-w="${wA}"></div>
+          <div class="bf-bar-b" style="${styleB}" data-w="${wB}"></div>
+        </div>
+        <div class="bf-legend">
+          <span class="bf-legend-a">${nameA}: ${lA>=50?dim.left:dim.right} ${Math.round(wA*2)}%</span>
+          <span class="bf-diff-badge ${diffClass}">${diffText}</span>
+          <span class="bf-legend-b">${nameB}: ${lB>=50?dim.left:dim.right} ${Math.round(wB*2)}%</span>
+        </div>
+      </div>`;
+  }).join('');
+
+  const strengthRowsA = tA.strength.map(s =>
+    `<div class="type-trait"><span class="trait-icon" style="color:var(--gold)">✦</span><span>${s}</span></div>`
+  ).join('');
+  const growthRowsA = tA.growth.map(s =>
+    `<div class="type-trait"><span class="trait-icon" style="color:var(--silver)">→</span><span>${s}</span></div>`
+  ).join('');
+  const strengthRowsB = tB.strength.map(s =>
+    `<div class="type-trait"><span class="trait-icon" style="color:var(--B)">✦</span><span>${s}</span></div>`
+  ).join('');
+  const growthRowsB = tB.growth.map(s =>
+    `<div class="type-trait"><span class="trait-icon" style="color:var(--silver)">→</span><span>${s}</span></div>`
+  ).join('');
+
+  screen.innerHTML = `
+    <!-- 커버 -->
+    <div class="result-cover">
+      <p class="result-kicker">온유스쿨 · 부부클래스 · 소통스타일 리포트</p>
+      <div class="result-couple-row">
+        <div class="result-person">
+          <div class="result-type-icon">${tA.icon}</div>
+          <div class="result-type-code" style="color:var(--A)">${typeA}</div>
+          <div style="font-size:12px;color:var(--A);margin-top:2px;">${tA.label}</div>
+          <div class="result-person-name">${nameA}</div>
+        </div>
+        <div class="result-heart">🤝</div>
+        <div class="result-person">
+          <div class="result-type-icon">${tB.icon}</div>
+          <div class="result-type-code" style="color:var(--B)">${typeB}</div>
+          <div style="font-size:12px;color:var(--B);margin-top:2px;">${tB.label}</div>
+          <div class="result-person-name">${nameB}</div>
+        </div>
+      </div>
+      <div class="result-date">${today} · 온유스쿨 부부클래스</div>
+    </div>
+
+    <!-- SECTION 01: 소통 연결 지수 -->
+    <div class="result-section">
+      <p class="sec-num">SECTION 01</p>
+      <h2 class="sec-title">두 사람의 <em>소통 연결 지수</em></h2>
+      <div class="compat-card">
+        <div class="compat-score">${compat.score}</div>
+        <div class="compat-label">소통 연결 지수</div>
+        <div class="compat-title">${compat.title}</div>
+        <div class="compat-desc">${compat.desc}</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- SECTION 02: 소통 강점 -->
+    <div class="result-section">
+      <p class="sec-num">SECTION 02</p>
+      <h2 class="sec-title">두 사람이 <em>함께 빛나는 것</em></h2>
+      <div class="content-block">
+        <div class="block-header" style="color:var(--green)">✦ 함께일 때 강점</div>
+        <div class="block-body">${compat.strength}</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- SECTION 03: 성장 영역 -->
+    <div class="result-section">
+      <p class="sec-num">SECTION 03</p>
+      <h2 class="sec-title">함께 성장할 <em>영역</em></h2>
+      <div class="content-block" style="border-color:rgba(224,80,64,.2)">
+        <div class="block-header" style="color:var(--red)">◈ 소통의 어려움</div>
+        <div class="block-body" style="color:var(--silver)">${compat.challenge}</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- SECTION 04: 4차원 나비 차트 -->
+    <div class="result-section">
+      <p class="sec-num">SECTION 04</p>
+      <h2 class="sec-title">4가지 소통 차원 <em>비교</em></h2>
+      <p style="font-size:14px;color:var(--silver);line-height:1.75;margin-bottom:20px;">
+        중앙을 기준으로 각 차원에서 두 사람이 어느 방향으로 얼마나 성향이 있는지 보여줍니다.
+        막대가 길수록 그 방향 성향이 강합니다.
+      </p>
+      <div class="butterfly-card">
+        <div class="butterfly-title">
+          <span style="color:var(--A)">▬ ${nameA}</span>
+          &nbsp;&nbsp;
+          <span style="color:var(--B)">▬ ${nameB}</span>
+        </div>
+        ${butterflyRows}
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- SECTION 05: 개인 스타일 -->
+    <div class="result-section">
+      <p class="sec-num">SECTION 05</p>
+      <h2 class="sec-title">각자의 <em>소통 스타일</em></h2>
+      <div class="type-pair-grid">
+        <div class="type-card">
+          <div class="type-card-header">
+            <span class="type-card-icon">${tA.icon}</span>
+            <div>
+              <div class="type-card-name" style="color:var(--A)">${nameA} · ${typeA}</div>
+              <div class="type-card-sub">${tA.sub}</div>
+            </div>
+          </div>
+          <div style="font-size:11px;letter-spacing:1px;color:var(--gold);margin-bottom:8px;">✦ 강점</div>
+          ${strengthRowsA}
+          <div style="font-size:11px;letter-spacing:1px;color:var(--silver);margin:12px 0 8px;">→ 성장 영역</div>
+          ${growthRowsA}
+        </div>
+        <div class="type-card">
+          <div class="type-card-header">
+            <span class="type-card-icon">${tB.icon}</span>
+            <div>
+              <div class="type-card-name" style="color:var(--B)">${nameB} · ${typeB}</div>
+              <div class="type-card-sub">${tB.sub}</div>
+            </div>
+          </div>
+          <div style="font-size:11px;letter-spacing:1px;color:var(--B);margin-bottom:8px;">✦ 강점</div>
+          ${strengthRowsB}
+          <div style="font-size:11px;letter-spacing:1px;color:var(--silver);margin:12px 0 8px;">→ 성장 영역</div>
+          ${growthRowsB}
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- SECTION 06: 소통 가이드 -->
+    <div class="result-section">
+      <p class="sec-num">SECTION 06</p>
+      <h2 class="sec-title">두 사람을 위한 <em>소통 가이드</em></h2>
+      <div class="content-block">
+        <div class="block-header" style="color:var(--A)">→ ${nameA}에게</div>
+        <div class="block-body" style="font-size:14px;">
+          <div class="guide-item"><span class="guide-num">1</span><span>배우자가 감정을 이야기할 때, 먼저 "그랬구나, 많이 힘들었겠다"라고 말해보세요. 해결은 그 다음입니다.</span></div>
+          <div class="guide-item"><span class="guide-num">2</span><span>침묵이 필요할 때 "지금 생각 정리 중이야, 잠시 후에 이야기하자"라고 말해주세요.</span></div>
+          <div class="guide-item"><span class="guide-num">3</span><span>${nameB}의 소통 스타일(${typeB} · ${tB.sub})을 기억해주세요. 다름은 틀림이 아닙니다.</span></div>
+        </div>
+      </div>
+      <div class="content-block">
+        <div class="block-header" style="color:var(--B)">→ ${nameB}에게</div>
+        <div class="block-body" style="font-size:14px;">
+          <div class="guide-item"><span class="guide-num">1</span><span>배우자에게 "해결책 말고, 그냥 들어줘"라고 미리 말하는 연습을 해보세요.</span></div>
+          <div class="guide-item"><span class="guide-num">2</span><span>내가 원하는 것을 솔직하게 표현해보세요. 상대는 내 마음을 읽을 수 없어요.</span></div>
+          <div class="guide-item"><span class="guide-num">3</span><span>${nameA}의 소통 스타일(${typeA} · ${tA.sub})을 기억해주세요. 그 안에 진심이 담겨 있습니다.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- 워크북 질문 -->
+    <div class="result-section">
+      <p class="sec-num">SECTION 07</p>
+      <h2 class="sec-title">함께 나눠볼 <em>질문들</em></h2>
+      <div class="content-block">
+        <div class="block-body" style="font-size:14px;">
+          <div class="guide-item"><span class="guide-num">Q</span><span>배우자에게 가장 감사했던 소통의 순간은 언제인가요?</span></div>
+          <div class="guide-item"><span class="guide-num">Q</span><span>내가 배우자에게 서운했던 순간, 배우자는 어떤 의도였을까요?</span></div>
+          <div class="guide-item"><span class="guide-num">Q</span><span>앞으로 우리 부부가 더 잘 소통하려면 무엇이 필요할까요?</span></div>
+          <div class="guide-item"><span class="guide-num">Q</span><span>배우자가 나에게 바라는 한 가지를 솔직하게 말해준다면?</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 푸터 -->
+    <div class="report-footer">
+      온유스쿨 · 부부클래스 · 소통스타일 리포트<br/>
+      ${nameA} & ${nameB} · ${today}<br/>
+      이 결과는 소통 이해를 위한 참고 도구입니다.
+    </div>`;
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function printReport() {
+  window.print();
+}
+</script>
+</body>
+</html>
